@@ -18,7 +18,7 @@ class ComplexValueObjectValidationPropertiesTest {
     @Property
     @Label("Feature: customer-master-system, Property 1: Address無効郵便番号での例外発生")
     void addressInvalidPostalCodeThrowsException(@ForAll("invalidPostalCode") String invalidPostalCode) {
-        assertThatThrownBy(() -> new Address(invalidPostalCode, "東京都", "渋谷区", "1-1-1", null))
+        assertThatThrownBy(() -> Address.of(invalidPostalCode, "東京都", "渋谷区", "1-1-1", null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("郵便番号は「123-4567」の形式で入力してください");
     }
@@ -30,19 +30,19 @@ class ComplexValueObjectValidationPropertiesTest {
     @Label("Feature: customer-master-system, Property 1: Address必須項目での例外発生")
     void addressRequiredFieldsThrowException(@ForAll("invalidString") String invalidInput) {
         // 郵便番号が無効
-        assertThatThrownBy(() -> new Address(invalidInput, "東京都", "渋谷区", "1-1-1", null))
+        assertThatThrownBy(() -> Address.of(invalidInput, "東京都", "渋谷区", "1-1-1", null))
                 .isInstanceOf(IllegalArgumentException.class);
         
         // 都道府県が無効
-        assertThatThrownBy(() -> new Address("123-4567", invalidInput, "渋谷区", "1-1-1", null))
+        assertThatThrownBy(() -> Address.of("123-4567", invalidInput, "渋谷区", "1-1-1", null))
                 .isInstanceOf(IllegalArgumentException.class);
         
         // 市区町村が無効
-        assertThatThrownBy(() -> new Address("123-4567", "東京都", invalidInput, "1-1-1", null))
+        assertThatThrownBy(() -> Address.of("123-4567", "東京都", invalidInput, "1-1-1", null))
                 .isInstanceOf(IllegalArgumentException.class);
         
         // 番地が無効
-        assertThatThrownBy(() -> new Address("123-4567", "東京都", "渋谷区", invalidInput, null))
+        assertThatThrownBy(() -> Address.of("123-4567", "東京都", "渋谷区", invalidInput, null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -52,7 +52,7 @@ class ComplexValueObjectValidationPropertiesTest {
     @Property
     @Label("Feature: customer-master-system, Property 1: ContactInfo無効電話番号での例外発生")
     void contactInfoInvalidPhoneThrowsException(@ForAll("invalidPhoneNumber") String invalidPhone) {
-        assertThatThrownBy(() -> new ContactInfo(invalidPhone, null, null))
+        assertThatThrownBy(() -> ContactInfo.of(invalidPhone, null, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("電話番号は「03-1234-5678」の形式で入力してください");
     }
@@ -63,7 +63,7 @@ class ComplexValueObjectValidationPropertiesTest {
     @Property
     @Label("Feature: customer-master-system, Property 1: ContactInfo無効FAX番号での例外発生")
     void contactInfoInvalidFaxThrowsException(@ForAll("invalidPhoneNumber") String invalidFax) {
-        assertThatThrownBy(() -> new ContactInfo("03-1234-5678", invalidFax, null))
+        assertThatThrownBy(() -> ContactInfo.of("03-1234-5678", invalidFax, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("FAX番号は「03-1234-5678」の形式で入力してください");
     }
@@ -74,7 +74,7 @@ class ComplexValueObjectValidationPropertiesTest {
     @Property
     @Label("Feature: customer-master-system, Property 1: ContactInfo無効メールアドレスでの例外発生")
     void contactInfoInvalidEmailThrowsException(@ForAll("invalidEmail") String invalidEmail) {
-        assertThatThrownBy(() -> new ContactInfo("03-1234-5678", null, invalidEmail))
+        assertThatThrownBy(() -> ContactInfo.of("03-1234-5678", null, invalidEmail))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("メールアドレスの形式が正しくありません");
     }
@@ -85,7 +85,7 @@ class ComplexValueObjectValidationPropertiesTest {
     @Property
     @Label("Feature: customer-master-system, Property 1: ContactInfo必須電話番号での例外発生")
     void contactInfoRequiredPhoneThrowsException(@ForAll("invalidString") String invalidPhone) {
-        assertThatThrownBy(() -> new ContactInfo(invalidPhone, null, null))
+        assertThatThrownBy(() -> ContactInfo.of(invalidPhone, null, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("電話番号は必須です");
     }
@@ -96,7 +96,7 @@ class ComplexValueObjectValidationPropertiesTest {
     @Property
     @Label("Feature: customer-master-system, Property 1: BankAccount無効銀行コードでの例外発生")
     void bankAccountInvalidBankCodeThrowsException(@ForAll("invalidBankCode") String invalidBankCode) {
-        assertThatThrownBy(() -> new BankAccount(invalidBankCode, "テスト銀行", "001", "本店", 
+        assertThatThrownBy(() -> BankAccount.of(invalidBankCode, "テスト銀行", "001", "本店", 
                 BankAccount.AccountType.ORDINARY, "1234567", "テスト太郎"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("銀行コードは4桁の数字で入力してください");
@@ -108,7 +108,7 @@ class ComplexValueObjectValidationPropertiesTest {
     @Property
     @Label("Feature: customer-master-system, Property 1: BankAccount無効支店コードでの例外発生")
     void bankAccountInvalidBranchCodeThrowsException(@ForAll("invalidBranchCode") String invalidBranchCode) {
-        assertThatThrownBy(() -> new BankAccount("0001", "テスト銀行", invalidBranchCode, "本店", 
+        assertThatThrownBy(() -> BankAccount.of("0001", "テスト銀行", invalidBranchCode, "本店", 
                 BankAccount.AccountType.ORDINARY, "1234567", "テスト太郎"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("支店コードは3桁の数字で入力してください");
@@ -120,7 +120,7 @@ class ComplexValueObjectValidationPropertiesTest {
     @Property
     @Label("Feature: customer-master-system, Property 1: BankAccount無効口座番号での例外発生")
     void bankAccountInvalidAccountNumberThrowsException(@ForAll("invalidAccountNumber") String invalidAccountNumber) {
-        assertThatThrownBy(() -> new BankAccount("0001", "テスト銀行", "001", "本店", 
+        assertThatThrownBy(() -> BankAccount.of("0001", "テスト銀行", "001", "本店", 
                 BankAccount.AccountType.ORDINARY, invalidAccountNumber, "テスト太郎"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("口座番号は7桁の数字で入力してください");
@@ -133,19 +133,19 @@ class ComplexValueObjectValidationPropertiesTest {
     @Label("Feature: customer-master-system, Property 1: BankAccount必須項目での例外発生")
     void bankAccountRequiredFieldsThrowException(@ForAll("invalidString") String invalidInput) {
         // 銀行名が無効
-        assertThatThrownBy(() -> new BankAccount("0001", invalidInput, "001", "本店", 
+        assertThatThrownBy(() -> BankAccount.of("0001", invalidInput, "001", "本店", 
                 BankAccount.AccountType.ORDINARY, "1234567", "テスト太郎"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("銀行名は必須です");
         
         // 支店名が無効
-        assertThatThrownBy(() -> new BankAccount("0001", "テスト銀行", "001", invalidInput, 
+        assertThatThrownBy(() -> BankAccount.of("0001", "テスト銀行", "001", invalidInput, 
                 BankAccount.AccountType.ORDINARY, "1234567", "テスト太郎"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("支店名は必須です");
         
         // 口座名義人が無効
-        assertThatThrownBy(() -> new BankAccount("0001", "テスト銀行", "001", "本店", 
+        assertThatThrownBy(() -> BankAccount.of("0001", "テスト銀行", "001", "本店", 
                 BankAccount.AccountType.ORDINARY, "1234567", invalidInput))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("口座名義人は必須です");
@@ -157,7 +157,7 @@ class ComplexValueObjectValidationPropertiesTest {
     @Property
     @Label("Feature: customer-master-system, Property 1: BankAccount null口座種別での例外発生")
     void bankAccountNullAccountTypeThrowsException() {
-        assertThatThrownBy(() -> new BankAccount("0001", "テスト銀行", "001", "本店", 
+        assertThatThrownBy(() -> BankAccount.of("0001", "テスト銀行", "001", "本店", 
                 null, "1234567", "テスト太郎"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("口座種別は必須です");

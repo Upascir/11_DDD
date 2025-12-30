@@ -37,9 +37,9 @@ class ComplexValueObjectPropertiesTest {
                    !city1.trim().equals(city2.trim()) ||
                    !streetAddress1.trim().equals(streetAddress2.trim()));
         
-        Address address1a = new Address(postalCode1, prefecture1, city1, streetAddress1, building1);
-        Address address1b = new Address(postalCode1, prefecture1, city1, streetAddress1, building1);
-        Address address2 = new Address(postalCode2, prefecture2, city2, streetAddress2, building2);
+        Address address1a = Address.of(postalCode1, prefecture1, city1, streetAddress1, building1);
+        Address address1b = Address.of(postalCode1, prefecture1, city1, streetAddress1, building1);
+        Address address2 = Address.of(postalCode2, prefecture2, city2, streetAddress2, building2);
         
         // 同じ値から作成されたAddressは等価
         assertThat(address1a).isEqualTo(address1b);
@@ -77,9 +77,9 @@ class ComplexValueObjectPropertiesTest {
         // 異なる連絡先を想定
         Assume.that(!phone1.equals(phone2));
         
-        ContactInfo contact1a = new ContactInfo(phone1, fax1, email1);
-        ContactInfo contact1b = new ContactInfo(phone1, fax1, email1);
-        ContactInfo contact2 = new ContactInfo(phone2, fax2, email2);
+        ContactInfo contact1a = ContactInfo.of(phone1, fax1, email1);
+        ContactInfo contact1b = ContactInfo.of(phone1, fax1, email1);
+        ContactInfo contact2 = ContactInfo.of(phone2, fax2, email2);
         
         // 同じ値から作成されたContactInfoは等価
         assertThat(contact1a).isEqualTo(contact1b);
@@ -126,11 +126,11 @@ class ComplexValueObjectPropertiesTest {
                    !accountType1.equals(accountType2) ||
                    !accountNumber1.equals(accountNumber2));
         
-        BankAccount account1a = new BankAccount(bankCode1, bankName1, branchCode1, branchName1, 
+        BankAccount account1a = BankAccount.of(bankCode1, bankName1, branchCode1, branchName1, 
                                                accountType1, accountNumber1, holderName1);
-        BankAccount account1b = new BankAccount(bankCode1, bankName1, branchCode1, branchName1, 
+        BankAccount account1b = BankAccount.of(bankCode1, bankName1, branchCode1, branchName1, 
                                                accountType1, accountNumber1, holderName1);
-        BankAccount account2 = new BankAccount(bankCode2, bankName2, branchCode2, branchName2, 
+        BankAccount account2 = BankAccount.of(bankCode2, bankName2, branchCode2, branchName2, 
                                               accountType2, accountNumber2, holderName2);
         
         // 同じ値から作成されたBankAccountは等価
