@@ -110,11 +110,18 @@ public class BankAccount extends ValueObject {
     /**
      * 必須項目のバリデーション
      */
-    private <T> T validateRequired(T value, String fieldName) {
-        if (value == null) {
+    private String validateRequired(String value, String fieldName) {
+        if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException(fieldName + "は必須です");
         }
-        if (value instanceof String && ((String) value).trim().isEmpty()) {
+        return value.trim();
+    }
+    
+    /**
+     * 必須項目のバリデーション（非文字列）
+     */
+    private <T> T validateRequired(T value, String fieldName) {
+        if (value == null) {
             throw new IllegalArgumentException(fieldName + "は必須です");
         }
         return value;
