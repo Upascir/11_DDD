@@ -16,7 +16,7 @@ public class CustomerName extends Name {
      * 
      * @param value 顧客名
      */
-    public CustomerName(String value) {
+    private CustomerName(String value) {
         super(value);
     }
     

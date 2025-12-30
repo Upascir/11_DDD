@@ -16,7 +16,7 @@ public class DepartmentName extends Name {
      * 
      * @param value 部署名
      */
-    public DepartmentName(String value) {
+    private DepartmentName(String value) {
         super(value);
     }
     

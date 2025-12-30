@@ -14,7 +14,7 @@ public class SalesDepartmentId extends EntityId {
      * 
      * @param value ID値
      */
-    public SalesDepartmentId(String value) {
+    private SalesDepartmentId(String value) {
         super(value);
     }
     

@@ -14,7 +14,7 @@ public class UserId extends EntityId {
      * 
      * @param value ID値
      */
-    public UserId(String value) {
+    private UserId(String value) {
         super(value);
     }
     

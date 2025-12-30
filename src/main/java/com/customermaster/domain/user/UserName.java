@@ -16,7 +16,7 @@ public class UserName extends Name {
      * 
      * @param value ユーザー名
      */
-    public UserName(String value) {
+    private UserName(String value) {
         super(value);
     }
     

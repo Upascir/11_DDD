@@ -18,6 +18,13 @@ public class BankAccount extends ValueObject {
     private final String accountHolderName;
     
     /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+    private BankAccount() {
+        throw new UnsupportedOperationException("ファクトリメソッドを使用してください");
+    }
+    
+    /**
      * 口座種別
      */
     public enum AccountType {
@@ -47,7 +54,7 @@ public class BankAccount extends ValueObject {
      * @param accountNumber 口座番号
      * @param accountHolderName 口座名義人
      */
-    public BankAccount(String bankCode, String bankName, String branchCode, 
+    private BankAccount(String bankCode, String bankName, String branchCode, 
                        String branchName, AccountType accountType, 
                        String accountNumber, String accountHolderName) {
         this.bankCode = validateBankCode(bankCode);
@@ -125,6 +132,25 @@ public class BankAccount extends ValueObject {
             throw new IllegalArgumentException(fieldName + "は必須です");
         }
         return value;
+    }
+    
+    /**
+     * 銀行口座情報を作成
+     * 
+     * @param bankCode 銀行コード
+     * @param bankName 銀行名
+     * @param branchCode 支店コード
+     * @param branchName 支店名
+     * @param accountType 口座種別
+     * @param accountNumber 口座番号
+     * @param accountHolderName 口座名義人
+     * @return BankAccount
+     */
+    public static BankAccount of(String bankCode, String bankName, String branchCode, 
+                                String branchName, AccountType accountType, 
+                                String accountNumber, String accountHolderName) {
+        return new BankAccount(bankCode, bankName, branchCode, branchName, 
+                              accountType, accountNumber, accountHolderName);
     }
     
     // Getters

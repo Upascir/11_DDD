@@ -18,13 +18,20 @@ public class ContactInfo extends ValueObject {
     private final String emailAddress;
     
     /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+    private ContactInfo() {
+        throw new UnsupportedOperationException("ファクトリメソッドを使用してください");
+    }
+    
+    /**
      * コンストラクタ
      * 
      * @param phoneNumber 電話番号（必須）
      * @param faxNumber FAX番号（任意）
      * @param emailAddress メールアドレス（任意）
      */
-    public ContactInfo(String phoneNumber, String faxNumber, String emailAddress) {
+    private ContactInfo(String phoneNumber, String faxNumber, String emailAddress) {
         this.phoneNumber = validatePhoneNumber(phoneNumber);
         this.faxNumber = validateOptionalPhoneNumber(faxNumber, "FAX番号");
         this.emailAddress = validateEmailAddress(emailAddress);
@@ -76,6 +83,28 @@ public class ContactInfo extends ValueObject {
         }
         
         return trimmed;
+    }
+    
+    /**
+     * 連絡先情報を作成
+     * 
+     * @param phoneNumber 電話番号（必須）
+     * @param faxNumber FAX番号（任意）
+     * @param emailAddress メールアドレス（任意）
+     * @return ContactInfo
+     */
+    public static ContactInfo of(String phoneNumber, String faxNumber, String emailAddress) {
+        return new ContactInfo(phoneNumber, faxNumber, emailAddress);
+    }
+    
+    /**
+     * 連絡先情報を作成（電話番号のみ）
+     * 
+     * @param phoneNumber 電話番号（必須）
+     * @return ContactInfo
+     */
+    public static ContactInfo of(String phoneNumber) {
+        return new ContactInfo(phoneNumber, null, null);
     }
     
     /**

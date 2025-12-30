@@ -16,6 +16,13 @@ public class Address extends ValueObject {
     private final String building;
     
     /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+    private Address() {
+        throw new UnsupportedOperationException("ファクトリメソッドを使用してください");
+    }
+    
+    /**
      * コンストラクタ
      * 
      * @param postalCode 郵便番号
@@ -24,7 +31,7 @@ public class Address extends ValueObject {
      * @param streetAddress 町域・番地
      * @param building 建物名（任意）
      */
-    public Address(String postalCode, String prefecture, String city, 
+    private Address(String postalCode, String prefecture, String city, 
                    String streetAddress, String building) {
         this.postalCode = validateAndTrim(postalCode, "郵便番号");
         this.prefecture = validateAndTrim(prefecture, "都道府県");
@@ -33,6 +40,35 @@ public class Address extends ValueObject {
         this.building = building != null ? building.trim() : null;
         
         validatePostalCode(this.postalCode);
+    }
+    
+    /**
+     * 住所を作成
+     * 
+     * @param postalCode 郵便番号
+     * @param prefecture 都道府県
+     * @param city 市区町村
+     * @param streetAddress 町域・番地
+     * @param building 建物名（任意）
+     * @return Address
+     */
+    public static Address of(String postalCode, String prefecture, String city, 
+                            String streetAddress, String building) {
+        return new Address(postalCode, prefecture, city, streetAddress, building);
+    }
+    
+    /**
+     * 住所を作成（建物名なし）
+     * 
+     * @param postalCode 郵便番号
+     * @param prefecture 都道府県
+     * @param city 市区町村
+     * @param streetAddress 町域・番地
+     * @return Address
+     */
+    public static Address of(String postalCode, String prefecture, String city, 
+                            String streetAddress) {
+        return new Address(postalCode, prefecture, city, streetAddress, null);
     }
     
     /**

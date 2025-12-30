@@ -14,7 +14,7 @@ public class CustomerId extends EntityId {
      * 
      * @param value ID値
      */
-    public CustomerId(String value) {
+    private CustomerId(String value) {
         super(value);
     }
     
