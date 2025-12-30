@@ -1,0 +1,27 @@
+# 開発環境用設定（devcontainer対応）
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/customer_master
+    username: customer_master_user
+    password: password
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  
+  # H2データベース（ローカル開発用）
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# 開発用ログ設定
+logging:
+  level:
+    root: INFO
+    com.customermaster: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: customer-master-system
+  
+  # データベース設定
+  datasource:
+    url: jdbc:postgresql://localhost:5432/customer_master
+    username: ${DB_USERNAME:customer_master_user}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+  
+  # JPA設定
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  # セキュリティ設定
+  security:
+    user:
+      name: admin
+      password: admin
+      roles: ADMIN
+
+# サーバー設定
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# ログ設定
+logging:
+  level:
+    com.customermaster: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/customer-master-system.log
+
+# アプリケーション固有設定
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:mySecretKey}
+      expiration: 3600000 # 1時間
+    session:
+      timeout: 3600 # 1時間（秒）
+    account-lock:
+      max-attempts: 3
+      lock-duration: 900 # 15分（秒）
