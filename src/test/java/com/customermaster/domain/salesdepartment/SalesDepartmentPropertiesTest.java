@@ -3,7 +3,6 @@ package com.customermaster.domain.salesdepartment;
 import com.customermaster.domain.user.UserId;
 import net.jqwik.api.*;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
