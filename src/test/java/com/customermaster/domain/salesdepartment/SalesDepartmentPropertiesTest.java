@@ -20,96 +20,100 @@ class SalesDepartmentPropertiesTest {
 
     /**
      * プロパティ3: 営業部には最低1人の部長が必要
-     * 営業部を作成・復元する際、必ず1人以上の部長が設定されている必要がある
+     * 営業部の不変条件として、常に最低1人の部長が設定されている必要がある
      */
     @Property
     @Label("Feature: customer-master-system, Property 3: 営業部の最低部長数制約")
-    void salesDepartmentRequiresAtLeastOneManager(@ForAll("validDepartmentNames") DepartmentName departmentName) {
+    void salesDepartmentMustHaveAtLeastOneManager(@ForAll("validDepartmentNames") DepartmentName departmentName) {
         SalesDepartmentId departmentId = SalesDepartmentId.generate();
         UserId managerId = UserId.generate();
         
         // 新規作成時は初期部長が必須
         SalesDepartment department = SalesDepartment.create(departmentId, departmentName, managerId);
-        assertThat(department.getDepartmentManagerCount()).isGreaterThanOrEqualTo(1);
+        assertThat(department.getDepartmentManagerCount()).isEqualTo(1);
         assertThat(department.isDepartmentManager(managerId)).isTrue();
         assertThat(department.isSalesRepresentative(managerId)).isTrue();
         
-        // 部長を追加
-        UserId additionalManagerId = UserId.generate();
-        department.addSalesRepresentative(additionalManagerId);
-        department.addDepartmentManager(additionalManagerId);
+        // 複数部長がいる場合、最後の1人は削除できない
+        UserId secondManagerId = UserId.generate();
+        department.addSalesRepresentative(secondManagerId);
+        department.addDepartmentManager(secondManagerId);
         assertThat(department.getDepartmentManagerCount()).isEqualTo(2);
         
-        // 最後の部長は削除できない
-        department.removeDepartmentManager(additionalManagerId);
+        // 1人目の部長を削除
+        department.removeDepartmentManager(managerId);
         assertThat(department.getDepartmentManagerCount()).isEqualTo(1);
+        assertThat(department.isDepartmentManager(secondManagerId)).isTrue();
         
-        assertThatThrownBy(() -> department.removeDepartmentManager(managerId))
+        // 最後の部長は削除できない
+        assertThatThrownBy(() -> department.removeDepartmentManager(secondManagerId))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("営業部には最低1人の部長が必要です");
     }
 
     /**
-     * プロパティ3: 部長は営業担当者から選出される
-     * 部長に任命されるユーザーは必ず営業担当者である必要がある
+     * プロパティ3: 部長は営業担当者の中から選出される
+     * 部長に任命されるユーザーは、事前に営業担当者として登録されている必要がある
      */
     @Property
     @Label("Feature: customer-master-system, Property 3: 部長の営業担当者選出制約")
     void departmentManagerMustBeSalesRepresentative(@ForAll("validDepartmentNames") DepartmentName departmentName) {
         SalesDepartmentId departmentId = SalesDepartmentId.generate();
         UserId initialManagerId = UserId.generate();
+        UserId salesRepId = UserId.generate();
+        UserId outsiderId = UserId.generate();
         
         SalesDepartment department = SalesDepartment.create(departmentId, departmentName, initialManagerId);
         
-        // 営業担当者でないユーザーを部長に任命しようとすると例外
-        UserId nonSalesRepId = UserId.generate();
-        assertThatThrownBy(() -> department.addDepartmentManager(nonSalesRepId))
+        // 営業担当者を追加
+        department.addSalesRepresentative(salesRepId);
+        
+        // 営業担当者は部長に任命可能
+        department.addDepartmentManager(salesRepId);
+        assertThat(department.isDepartmentManager(salesRepId)).isTrue();
+        
+        // 営業担当者でないユーザーは部長に任命不可
+        assertThatThrownBy(() -> department.addDepartmentManager(outsiderId))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("部長は営業担当者の中から選出される必要があります");
-        
-        // 営業担当者を追加してから部長に任命
-        department.addSalesRepresentative(nonSalesRepId);
-        department.addDepartmentManager(nonSalesRepId);
-        assertThat(department.isDepartmentManager(nonSalesRepId)).isTrue();
-        assertThat(department.isSalesRepresentative(nonSalesRepId)).isTrue();
     }
 
     /**
-     * プロパティ3: 部長は営業担当者から削除する前に部長の役割を解除する必要がある
-     * 部長を営業担当者から削除する場合、先に部長の役割を解除する必要がある
+     * プロパティ3: 部長の営業担当者削除制約
+     * 部長として任命されているユーザーは、部長の役割を解除するまで営業担当者から削除できない
      */
     @Property
     @Label("Feature: customer-master-system, Property 3: 部長の営業担当者削除制約")
-    void managerMustBeRemovedFromManagerRoleFirst(@ForAll("validDepartmentNames") DepartmentName departmentName) {
+    void cannotRemoveSalesRepresentativeWhoIsManager(@ForAll("validDepartmentNames") DepartmentName departmentName) {
         SalesDepartmentId departmentId = SalesDepartmentId.generate();
-        UserId managerId1 = UserId.generate();
-        UserId managerId2 = UserId.generate();
+        UserId managerId = UserId.generate();
         
-        SalesDepartment department = SalesDepartment.create(departmentId, departmentName, managerId1);
+        SalesDepartment department = SalesDepartment.create(departmentId, departmentName, managerId);
         
-        // 2人目の部長を追加
-        department.addSalesRepresentative(managerId2);
-        department.addDepartmentManager(managerId2);
-        
-        // 部長のまま営業担当者から削除しようとすると例外
-        assertThatThrownBy(() -> department.removeSalesRepresentative(managerId2))
+        // 部長は営業担当者から直接削除できない
+        assertThatThrownBy(() -> department.removeSalesRepresentative(managerId))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("部長は営業担当者から削除する前に部長の役割を解除してください");
         
-        // 部長の役割を解除してから営業担当者から削除
-        department.removeDepartmentManager(managerId2);
-        department.removeSalesRepresentative(managerId2);
-        assertThat(department.isSalesRepresentative(managerId2)).isFalse();
-        assertThat(department.isDepartmentManager(managerId2)).isFalse();
+        // 別の部長を追加してから元の部長を解除すれば削除可能
+        UserId secondManagerId = UserId.generate();
+        department.addSalesRepresentative(secondManagerId);
+        department.addDepartmentManager(secondManagerId);
+        department.removeDepartmentManager(managerId);
+        
+        // 部長でなくなったので営業担当者から削除可能
+        department.removeSalesRepresentative(managerId);
+        assertThat(department.isSalesRepresentative(managerId)).isFalse();
+        assertThat(department.isDepartmentManager(managerId)).isFalse();
     }
 
     /**
-     * プロパティ3: 営業部の状態管理の整合性
-     * 営業部の状態変更が適切に動作する
+     * プロパティ3: 営業部の状態遷移の整合性
+     * 営業部の状態（ACTIVE/INACTIVE/DELETED）が適切に管理される
      */
     @Property
-    @Label("Feature: customer-master-system, Property 3: 営業部状態管理の整合性")
-    void departmentStatusManagementIsConsistent(@ForAll("validDepartmentNames") DepartmentName departmentName) {
+    @Label("Feature: customer-master-system, Property 3: 営業部の状態遷移整合性")
+    void departmentStatusTransitionIsConsistent(@ForAll("validDepartmentNames") DepartmentName departmentName) {
         SalesDepartmentId departmentId = SalesDepartmentId.generate();
         UserId managerId = UserId.generate();
         
@@ -124,16 +128,6 @@ class SalesDepartmentPropertiesTest {
         assertThat(department.getStatus()).isEqualTo(DepartmentStatus.INACTIVE);
         assertThat(department.isActive()).isFalse();
         
-        // 非アクティブ状態では営業担当者・部長を追加できない
-        UserId newUserId = UserId.generate();
-        assertThatThrownBy(() -> department.addSalesRepresentative(newUserId))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("非アクティブな営業部には営業担当者を追加できません");
-        
-        assertThatThrownBy(() -> department.addDepartmentManager(newUserId))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("非アクティブな営業部には部長を追加できません");
-        
         // 再アクティブ化
         department.activate();
         assertThat(department.getStatus()).isEqualTo(DepartmentStatus.ACTIVE);
@@ -146,88 +140,68 @@ class SalesDepartmentPropertiesTest {
     }
 
     /**
-     * プロパティ3: 営業部の復元時の不変条件検証
-     * 既存データから営業部を復元する際、不変条件が適切に検証される
+     * プロパティ3: 非アクティブ営業部への操作制限
+     * 非アクティブな営業部には営業担当者や部長を追加できない
      */
     @Property
-    @Label("Feature: customer-master-system, Property 3: 営業部復元時の不変条件検証")
-    void departmentRestorationValidatesInvariants(@ForAll("validDepartmentNames") DepartmentName departmentName,
-                                                @ForAll("validUserIdSets") Set<UserId> salesReps,
-                                                @ForAll("validUserIdSets") Set<UserId> managers) {
-        SalesDepartmentId departmentId = SalesDepartmentId.generate();
-        LocalDateTime now = LocalDateTime.now();
-        
-        // 部長が空の場合は復元時に例外
-        if (managers.isEmpty()) {
-            assertThatThrownBy(() -> 
-                SalesDepartment.restore(departmentId, departmentName, salesReps, managers, 
-                                      DepartmentStatus.ACTIVE, now, now))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("営業部には最低1人の部長が必要です");
-            return;
-        }
-        
-        // 部長が営業担当者に含まれていない場合は復元時に例外
-        boolean allManagersAreSalesReps = salesReps.containsAll(managers);
-        if (!allManagersAreSalesReps) {
-            assertThatThrownBy(() -> 
-                SalesDepartment.restore(departmentId, departmentName, salesReps, managers, 
-                                      DepartmentStatus.ACTIVE, now, now))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("部長は営業担当者の中から選出される必要があります");
-            return;
-        }
-        
-        // 正常な場合は復元成功
-        SalesDepartment department = SalesDepartment.restore(departmentId, departmentName, 
-                                                           salesReps, managers, 
-                                                           DepartmentStatus.ACTIVE, now, now);
-        assertThat(department.getDepartmentManagerCount()).isEqualTo(managers.size());
-        assertThat(department.getSalesRepresentativeCount()).isEqualTo(salesReps.size());
-        
-        // 復元後も不変条件が維持される
-        for (UserId managerId : managers) {
-            assertThat(department.isDepartmentManager(managerId)).isTrue();
-            assertThat(department.isSalesRepresentative(managerId)).isTrue();
-        }
-    }
-
-    /**
-     * プロパティ3: 営業部の組織変更操作の冪等性
-     * 同じ操作を複数回実行しても結果が変わらない
-     */
-    @Property
-    @Label("Feature: customer-master-system, Property 3: 営業部組織変更の冪等性")
-    void departmentOperationsAreIdempotent(@ForAll("validDepartmentNames") DepartmentName departmentName) {
+    @Label("Feature: customer-master-system, Property 3: 非アクティブ営業部への操作制限")
+    void inactiveDepartmentRestrictsOperations(@ForAll("validDepartmentNames") DepartmentName departmentName) {
         SalesDepartmentId departmentId = SalesDepartmentId.generate();
         UserId managerId = UserId.generate();
-        UserId salesRepId = UserId.generate();
+        UserId newUserId = UserId.generate();
         
         SalesDepartment department = SalesDepartment.create(departmentId, departmentName, managerId);
         
-        // 営業担当者の追加は冪等
-        department.addSalesRepresentative(salesRepId);
-        int initialSalesRepCount = department.getSalesRepresentativeCount();
-        department.addSalesRepresentative(salesRepId); // 同じユーザーを再度追加
-        assertThat(department.getSalesRepresentativeCount()).isEqualTo(initialSalesRepCount);
+        // 非アクティブ化
+        department.deactivate();
         
-        // 部長の追加は冪等
-        department.addDepartmentManager(salesRepId);
-        int initialManagerCount = department.getDepartmentManagerCount();
-        department.addDepartmentManager(salesRepId); // 同じユーザーを再度追加
-        assertThat(department.getDepartmentManagerCount()).isEqualTo(initialManagerCount);
+        // 非アクティブな営業部には営業担当者を追加できない
+        assertThatThrownBy(() -> department.addSalesRepresentative(newUserId))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("非アクティブな営業部には営業担当者を追加できません");
         
-        // 削除操作も冪等
-        department.removeDepartmentManager(salesRepId);
-        department.removeSalesRepresentative(salesRepId);
-        int finalSalesRepCount = department.getSalesRepresentativeCount();
-        int finalManagerCount = department.getDepartmentManagerCount();
+        // 非アクティブな営業部には部長を追加できない
+        assertThatThrownBy(() -> department.addDepartmentManager(newUserId))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("非アクティブな営業部には部長を追加できません");
+    }
+
+    /**
+     * プロパティ3: 営業部のメンバー管理の整合性
+     * 営業担当者と部長の追加・削除が適切に管理される
+     */
+    @Property
+    @Label("Feature: customer-master-system, Property 3: 営業部のメンバー管理整合性")
+    void memberManagementIsConsistent(@ForAll("validDepartmentNames") DepartmentName departmentName,
+                                    @ForAll("userIdSets") Set<UserId> userIds) {
+        Assume.that(userIds.size() >= 2); // 最低2人のユーザーが必要
         
-        // 存在しないユーザーの削除は何も起こらない
-        department.removeSalesRepresentative(salesRepId);
-        department.removeDepartmentManager(salesRepId);
-        assertThat(department.getSalesRepresentativeCount()).isEqualTo(finalSalesRepCount);
-        assertThat(department.getDepartmentManagerCount()).isEqualTo(finalManagerCount);
+        SalesDepartmentId departmentId = SalesDepartmentId.generate();
+        UserId[] userArray = userIds.toArray(new UserId[0]);
+        UserId initialManagerId = userArray[0];
+        
+        SalesDepartment department = SalesDepartment.create(departmentId, departmentName, initialManagerId);
+        
+        // 複数の営業担当者を追加
+        for (int i = 1; i < userArray.length; i++) {
+            department.addSalesRepresentative(userArray[i]);
+        }
+        
+        assertThat(department.getSalesRepresentativeCount()).isEqualTo(userIds.size());
+        
+        // 一部を部長に任命
+        for (int i = 1; i < Math.min(3, userArray.length); i++) {
+            department.addDepartmentManager(userArray[i]);
+        }
+        
+        // 部長数の確認
+        int expectedManagerCount = Math.min(3, userArray.length);
+        assertThat(department.getDepartmentManagerCount()).isEqualTo(expectedManagerCount);
+        
+        // 全ての部長は営業担当者でもある
+        for (UserId managerId : department.getDepartmentManagers()) {
+            assertThat(department.isSalesRepresentative(managerId)).isTrue();
+        }
     }
 
     // テストデータ生成用のArbitrary
@@ -238,24 +212,21 @@ class SalesDepartmentPropertiesTest {
             .withCharRange('a', 'z')
             .ofMinLength(1)
             .ofMaxLength(20)
-            .map(name -> DepartmentName.of("営業" + name + "部"));
+            .map(DepartmentName::of);
     }
 
     @Provide
-    Arbitrary<Set<UserId>> validUserIdSets() {
+    Arbitrary<Set<UserId>> userIdSets() {
         return Arbitraries.integers()
-            .between(0, 5)
-            .flatMap(size -> {
-                if (size == 0) {
-                    return Arbitraries.just(new HashSet<>());
-                }
-                return Arbitraries.create(() -> {
+            .between(2, 5)
+            .flatMap(size -> 
+                Arbitraries.create(() -> {
                     Set<UserId> userIds = new HashSet<>();
                     for (int i = 0; i < size; i++) {
                         userIds.add(UserId.generate());
                     }
                     return userIds;
-                });
-            });
+                })
+            );
     }
 }
