@@ -16,20 +16,19 @@ import java.util.Objects;
 public class AssignmentChangeAuthorizationService {
     
     /**
-     * 担当者変更申請の権限をチェック
+     * 担当者変更申請の権限を検証
      * 
      * @param requesterId 申請者ID
      * @param requesterRole 申請者の役割
      * @param requesterDepartmentId 申請者の営業部ID
      * @param customer 対象顧客
      * @param changeRequest 変更申請
-     * @return 申請可能な場合true
      * @throws IllegalArgumentException 権限がない場合
      */
-    public boolean canRequestAssignmentChange(UserId requesterId, Role requesterRole,
-                                            SalesDepartmentId requesterDepartmentId,
-                                            Customer customer,
-                                            AssignmentChangeRequest changeRequest) {
+    public void validateAssignmentChangeRequest(UserId requesterId, Role requesterRole,
+                                              SalesDepartmentId requesterDepartmentId,
+                                              Customer customer,
+                                              AssignmentChangeRequest changeRequest) {
         Objects.requireNonNull(requesterId, "申請者IDは必須です");
         Objects.requireNonNull(requesterRole, "申請者の役割は必須です");
         Objects.requireNonNull(customer, "対象顧客は必須です");
@@ -37,7 +36,7 @@ public class AssignmentChangeAuthorizationService {
         
         // システム管理者は常に申請可能
         if (requesterRole.isSystemAdministrator()) {
-            return true;
+            return; // 検証成功
         }
         
         // 営業担当者または部長のみ申請可能
@@ -64,23 +63,23 @@ public class AssignmentChangeAuthorizationService {
             throw new IllegalArgumentException("承認待ちの顧客は担当者変更できません");
         }
         
-        return true;
+        // 検証成功（例外がスローされなければ成功）
     }
     
     /**
-     * 担当者変更の直接実行権限をチェック
+     * 担当者変更の直接実行権限を検証
      * 
      * @param executorId 実行者ID
      * @param executorRole 実行者の役割
      * @param executorDepartmentId 実行者の営業部ID
      * @param customer 対象顧客
      * @param changeRequest 変更申請
-     * @return 直接実行可能な場合true
+     * @throws IllegalArgumentException 権限がない場合
      */
-    public boolean canDirectlyExecuteAssignmentChange(UserId executorId, Role executorRole,
-                                                    SalesDepartmentId executorDepartmentId,
-                                                    Customer customer,
-                                                    AssignmentChangeRequest changeRequest) {
+    public void validateDirectAssignmentChangeExecution(UserId executorId, Role executorRole,
+                                                       SalesDepartmentId executorDepartmentId,
+                                                       Customer customer,
+                                                       AssignmentChangeRequest changeRequest) {
         Objects.requireNonNull(executorId, "実行者IDは必須です");
         Objects.requireNonNull(executorRole, "実行者の役割は必須です");
         Objects.requireNonNull(customer, "対象顧客は必須です");
@@ -88,59 +87,59 @@ public class AssignmentChangeAuthorizationService {
         
         // 要件10.6: 情報システム部は営業部をまたいだ担当者変更を直接実行できる
         if (executorRole.isSystemAdministrator()) {
-            return true;
+            return; // 検証成功
         }
         
         // 要件10.7: 部長は同じ営業部内の担当者変更を直接実行できる
         if (executorRole.isDepartmentManager() && changeRequest.getChangeType().isWithinDepartment()) {
             if (executorDepartmentId != null && customer.belongsToDepartment(executorDepartmentId)) {
-                return true;
+                return; // 検証成功
             }
         }
         
-        return false;
+        throw new IllegalArgumentException("担当者変更を直接実行する権限がありません");
     }
     
     /**
-     * 担当者変更申請の承認権限をチェック
+     * 担当者変更申請の承認権限を検証
      * 
      * @param approverId 承認者ID
      * @param approverRole 承認者の役割
      * @param approverDepartmentId 承認者の営業部ID
      * @param changeRequest 変更申請
-     * @return 承認可能な場合true
+     * @throws IllegalArgumentException 権限がない場合
      */
-    public boolean canApproveAssignmentChange(UserId approverId, Role approverRole,
-                                            SalesDepartmentId approverDepartmentId,
-                                            AssignmentChangeRequest changeRequest) {
+    public void validateAssignmentChangeApproval(UserId approverId, Role approverRole,
+                                               SalesDepartmentId approverDepartmentId,
+                                               AssignmentChangeRequest changeRequest) {
         Objects.requireNonNull(approverId, "承認者IDは必須です");
         Objects.requireNonNull(approverRole, "承認者の役割は必須です");
         Objects.requireNonNull(changeRequest, "変更申請は必須です");
         
         // システム管理者は常に承認可能
         if (approverRole.isSystemAdministrator()) {
-            return true;
+            return; // 検証成功
         }
         
         // 部長のみ承認可能
         if (!approverRole.isDepartmentManager()) {
-            return false;
+            throw new IllegalArgumentException("部長のみが担当者変更申請を承認できます");
         }
         
         // 要件3.11: 申請者本人が部長の場合でも、自分では承認できず他の部長の承認が必要
         if (changeRequest.getRequesterId().equals(approverId)) {
-            return false;
+            throw new IllegalArgumentException("申請者本人は承認できません");
         }
         
         // 承認が必要な営業部に所属している部長のみ承認可能
         SalesDepartmentId[] requiredDepartments = changeRequest.getRequiredApprovalDepartments();
         for (SalesDepartmentId departmentId : requiredDepartments) {
             if (departmentId.equals(approverDepartmentId)) {
-                return true;
+                return; // 検証成功
             }
         }
         
-        return false;
+        throw new IllegalArgumentException("この申請を承認する権限がありません");
     }
     
     /**
