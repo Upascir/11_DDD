@@ -68,7 +68,7 @@
 
 #### 3. Customer集約の実装
 
-- [ ] 3.1 Customer集約の基本実装
+- [x] 3.1 Customer集約の基本実装
   - Customerエンティティの実装
   - CustomerBasicInfo、CreditInfoの実装
   - 顧客の基本的なビジネスメソッド
