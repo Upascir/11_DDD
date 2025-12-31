@@ -13,7 +13,8 @@ src/
 │   │   │   ├── shared/          # 共有ドメイン概念
 │   │   │   ├── customer/        # 顧客集約
 │   │   │   ├── salesdepartment/ # 営業部門集約
-│   │   │   └── user/            # ユーザー集約
+│   │   │   ├── user/            # ユーザー集約
+│   │   │   └── assign/          # 担当者割り当て管理
 │   │   ├── application/         # アプリケーション層（ユースケース）
 │   │   ├── infrastructure/      # インフラストラクチャ層（外部関心事）
 │   │   └── presentation/        # プレゼンテーション層（コントローラー、DTO）
@@ -53,6 +54,7 @@ src/
 - `domain.customer`: 顧客集約と関連値オブジェクト
 - `domain.salesdepartment`: 営業部門集約
 - `domain.user`: ユーザー集約と認証概念
+- `domain.assign`: 担当者割り当て管理（担当者変更申請、認可サービス）
 
 ### レイヤー依存関係
 - **ドメイン**: 他レイヤーに依存しない（純粋なビジネスロジック）

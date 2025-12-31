@@ -3,6 +3,8 @@ package com.customermaster.domain.customer;
 import com.customermaster.domain.shared.Address;
 import com.customermaster.domain.shared.ContactInfo;
 import com.customermaster.domain.shared.BankAccount;
+import com.customermaster.domain.assign.AssignmentChangeRequest;
+import com.customermaster.domain.assign.AssignedSalesRepresentative;
 import com.customermaster.domain.user.UserId;
 import com.customermaster.domain.salesdepartment.SalesDepartmentId;
 import org.junit.jupiter.api.Test;
@@ -271,6 +273,99 @@ class CustomerTest {
         // When & Then
         assertThat(customer.belongsToDepartment(departmentId)).isTrue();
         assertThat(customer.belongsToDepartment(SalesDepartmentId.generate())).isFalse();
+    }
+
+    @Test
+    @DisplayName("担当者変更申請を作成できる")
+    void canCreateAssignmentChangeRequest() {
+        // Given
+        Customer customer = createCustomer();
+        UserId requesterId = UserId.generate();
+        UserId newSalesRepId = UserId.generate();
+        SalesDepartmentId newDepartmentId = SalesDepartmentId.generate();
+        String reason = "業務効率化のため";
+        
+        // When
+        AssignmentChangeRequest request = customer.createAssignmentChangeRequest(
+            requesterId, newSalesRepId, newDepartmentId, reason);
+        
+        // Then
+        assertThat(request.getRequesterId()).isEqualTo(requesterId);
+        assertThat(request.getNewAssignment().getSalesRepresentativeId()).isEqualTo(newSalesRepId);
+        assertThat(request.getNewAssignment().getDepartmentId()).isEqualTo(newDepartmentId);
+        assertThat(request.getReason()).isEqualTo(reason);
+    }
+
+    @Test
+    @DisplayName("承認待ち状態では担当者変更申請できない")
+    void cannotCreateAssignmentChangeRequestWhenPendingApproval() {
+        // Given
+        Customer customer = createCustomer();
+        customer.requestApproval();
+        
+        // When & Then
+        assertThatThrownBy(() -> customer.createAssignmentChangeRequest(
+            UserId.generate(), UserId.generate(), SalesDepartmentId.generate(), "理由"))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("現在の状態では担当者変更申請できません");
+    }
+
+    @Test
+    @DisplayName("担当者変更を直接実行できる")
+    void canExecuteAssignmentChangeDirectly() {
+        // Given
+        Customer customer = createCustomer();
+        UserId newSalesRepId = UserId.generate();
+        SalesDepartmentId newDepartmentId = SalesDepartmentId.generate();
+        
+        // When
+        customer.executeAssignmentChange(newSalesRepId, newDepartmentId);
+        
+        // Then
+        assertThat(customer.getAssignedSalesRep().getSalesRepresentativeId()).isEqualTo(newSalesRepId);
+        assertThat(customer.getAssignedSalesRep().getDepartmentId()).isEqualTo(newDepartmentId);
+    }
+
+    @Test
+    @DisplayName("担当者変更申請に基づいて担当者変更を実行できる")
+    void canExecuteAssignmentChangeFromRequest() {
+        // Given
+        Customer customer = createCustomer();
+        UserId requesterId = UserId.generate();
+        UserId newSalesRepId = UserId.generate();
+        SalesDepartmentId newDepartmentId = SalesDepartmentId.generate();
+        
+        AssignmentChangeRequest request = customer.createAssignmentChangeRequest(
+            requesterId, newSalesRepId, newDepartmentId, "理由");
+        
+        // When
+        customer.executeAssignmentChange(request);
+        
+        // Then
+        assertThat(customer.getAssignedSalesRep().getSalesRepresentativeId()).isEqualTo(newSalesRepId);
+        assertThat(customer.getAssignedSalesRep().getDepartmentId()).isEqualTo(newDepartmentId);
+    }
+
+    @Test
+    @DisplayName("無効な担当者変更申請では実行できない")
+    void cannotExecuteInvalidAssignmentChangeRequest() {
+        // Given
+        Customer customer = createCustomer();
+        UserId requesterId = UserId.generate();
+        UserId newSalesRepId = UserId.generate();
+        SalesDepartmentId newDepartmentId = SalesDepartmentId.generate();
+        
+        AssignmentChangeRequest request = customer.createAssignmentChangeRequest(
+            requesterId, newSalesRepId, newDepartmentId, "理由");
+        
+        // 担当者を変更して申請を無効にする
+        customer.assignSalesRepresentative(AssignedSalesRepresentative.assignNow(
+            UserId.generate(), SalesDepartmentId.generate()));
+        
+        // When & Then
+        assertThatThrownBy(() -> customer.executeAssignmentChange(request))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("申請時の担当者と現在の担当者が一致しません");
     }
 
     // テストヘルパーメソッド

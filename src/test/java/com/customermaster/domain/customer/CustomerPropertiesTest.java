@@ -3,6 +3,8 @@ package com.customermaster.domain.customer;
 import com.customermaster.domain.shared.Address;
 import com.customermaster.domain.shared.ContactInfo;
 import com.customermaster.domain.shared.BankAccount;
+import com.customermaster.domain.assign.AssignmentChangeRequest;
+import com.customermaster.domain.assign.AssignedSalesRepresentative;
 import com.customermaster.domain.user.UserId;
 import com.customermaster.domain.salesdepartment.SalesDepartmentId;
 import net.jqwik.api.*;

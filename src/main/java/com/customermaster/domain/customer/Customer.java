@@ -4,6 +4,8 @@ import com.customermaster.domain.shared.Entity;
 import com.customermaster.domain.shared.Address;
 import com.customermaster.domain.shared.ContactInfo;
 import com.customermaster.domain.shared.BankAccount;
+import com.customermaster.domain.assign.AssignmentChangeRequest;
+import com.customermaster.domain.assign.AssignedSalesRepresentative;
 import com.customermaster.domain.user.UserId;
 import com.customermaster.domain.salesdepartment.SalesDepartmentId;
 
@@ -237,6 +239,56 @@ public class Customer extends Entity<CustomerId> {
     public void assignSalesRepresentative(AssignedSalesRepresentative newAssignedSalesRep) {
         this.assignedSalesRep = Objects.requireNonNull(newAssignedSalesRep, "担当営業者は必須です");
         markAsUpdated();
+    }
+    
+    /**
+     * 担当者変更申請を作成
+     * 
+     * @param requesterId 申請者ID
+     * @param newSalesRepId 新しい営業担当者ID
+     * @param newDepartmentId 新しい営業部ID
+     * @param reason 変更理由
+     * @return 担当者変更申請
+     */
+    public AssignmentChangeRequest createAssignmentChangeRequest(UserId requesterId,
+                                                               UserId newSalesRepId,
+                                                               SalesDepartmentId newDepartmentId,
+                                                               String reason) {
+        // 編集可能な状態かチェック
+        if (!isEditable()) {
+            throw new IllegalStateException("現在の状態では担当者変更申請できません: " + status.getDisplayName());
+        }
+        
+        return AssignmentChangeRequest.create(requesterId, assignedSalesRep, 
+                                            newSalesRepId, newDepartmentId, reason);
+    }
+    
+    /**
+     * 担当者変更を直接実行
+     * 
+     * @param newSalesRepId 新しい営業担当者ID
+     * @param newDepartmentId 新しい営業部ID
+     */
+    public void executeAssignmentChange(UserId newSalesRepId, SalesDepartmentId newDepartmentId) {
+        AssignedSalesRepresentative newAssignment = AssignedSalesRepresentative.assignNow(
+            newSalesRepId, newDepartmentId);
+        assignSalesRepresentative(newAssignment);
+    }
+    
+    /**
+     * 担当者変更申請に基づいて担当者を変更
+     * 
+     * @param changeRequest 変更申請
+     */
+    public void executeAssignmentChange(AssignmentChangeRequest changeRequest) {
+        Objects.requireNonNull(changeRequest, "変更申請は必須です");
+        
+        // 申請の有効性をチェック
+        if (!assignedSalesRep.equals(changeRequest.getCurrentAssignment())) {
+            throw new IllegalStateException("申請時の担当者と現在の担当者が一致しません");
+        }
+        
+        assignSalesRepresentative(changeRequest.getNewAssignment());
     }
     
     /**

@@ -1,4 +1,4 @@
-package com.customermaster.domain.customer;
+package com.customermaster.domain.assign;
 
 import com.customermaster.domain.shared.ValueObject;
 import com.customermaster.domain.user.UserId;
