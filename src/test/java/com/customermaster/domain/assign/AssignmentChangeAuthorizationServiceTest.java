@@ -54,9 +54,8 @@ class AssignmentChangeAuthorizationServiceTest {
             adminId, UserId.generate(), SalesDepartmentId.generate(), "理由");
         
         // When & Then
-        assertThat(service.canRequestAssignmentChange(
-            adminId, Role.SYSTEM_ADMINISTRATOR, null, customer, changeRequest))
-            .isTrue();
+        assertThatNoException().isThrownBy(() -> service.validateAssignmentChangeRequest(
+            adminId, Role.SYSTEM_ADMINISTRATOR, null, customer, changeRequest));
     }
 
     @Test
@@ -67,9 +66,8 @@ class AssignmentChangeAuthorizationServiceTest {
             salesRepId, UserId.generate(), departmentId, "理由");
         
         // When & Then
-        assertThat(service.canRequestAssignmentChange(
-            salesRepId, Role.SALES_REPRESENTATIVE, departmentId, customer, changeRequest))
-            .isTrue();
+        assertThatNoException().isThrownBy(() -> service.validateAssignmentChangeRequest(
+            salesRepId, Role.SALES_REPRESENTATIVE, departmentId, customer, changeRequest));
     }
 
     @Test
@@ -81,7 +79,7 @@ class AssignmentChangeAuthorizationServiceTest {
             otherSalesRepId, UserId.generate(), departmentId, "理由");
         
         // When & Then
-        assertThatThrownBy(() -> service.canRequestAssignmentChange(
+        assertThatThrownBy(() -> service.validateAssignmentChangeRequest(
             otherSalesRepId, Role.SALES_REPRESENTATIVE, departmentId, customer, changeRequest))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("自分が担当する顧客の担当者変更のみ申請できます");
@@ -96,9 +94,8 @@ class AssignmentChangeAuthorizationServiceTest {
             managerId, UserId.generate(), departmentId, "理由");
         
         // When & Then
-        assertThat(service.canRequestAssignmentChange(
-            managerId, Role.DEPARTMENT_MANAGER, departmentId, customer, changeRequest))
-            .isTrue();
+        assertThatNoException().isThrownBy(() -> service.validateAssignmentChangeRequest(
+            managerId, Role.DEPARTMENT_MANAGER, departmentId, customer, changeRequest));
     }
 
     @Test
@@ -111,7 +108,7 @@ class AssignmentChangeAuthorizationServiceTest {
             managerId, UserId.generate(), departmentId, "理由");
         
         // When & Then
-        assertThatThrownBy(() -> service.canRequestAssignmentChange(
+        assertThatThrownBy(() -> service.validateAssignmentChangeRequest(
             managerId, Role.DEPARTMENT_MANAGER, otherDepartmentId, customer, changeRequest))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("同じ営業部の顧客の担当者変更のみ申請できます");
@@ -140,9 +137,8 @@ class AssignmentChangeAuthorizationServiceTest {
             adminId, UserId.generate(), SalesDepartmentId.generate(), "理由");
         
         // When & Then
-        assertThat(service.canDirectlyExecuteAssignmentChange(
-            adminId, Role.SYSTEM_ADMINISTRATOR, null, customer, changeRequest))
-            .isTrue();
+        assertThatNoException().isThrownBy(() -> service.validateDirectAssignmentChangeExecution(
+            adminId, Role.SYSTEM_ADMINISTRATOR, null, customer, changeRequest));
     }
 
     @Test
@@ -154,9 +150,8 @@ class AssignmentChangeAuthorizationServiceTest {
             managerId, UserId.generate(), departmentId, "理由"); // 営業部内変更
         
         // When & Then
-        assertThat(service.canDirectlyExecuteAssignmentChange(
-            managerId, Role.DEPARTMENT_MANAGER, departmentId, customer, changeRequest))
-            .isTrue();
+        assertThatNoException().isThrownBy(() -> service.validateDirectAssignmentChangeExecution(
+            managerId, Role.DEPARTMENT_MANAGER, departmentId, customer, changeRequest));
     }
 
     @Test
@@ -168,9 +163,10 @@ class AssignmentChangeAuthorizationServiceTest {
             managerId, UserId.generate(), SalesDepartmentId.generate(), "理由"); // 営業部間変更
         
         // When & Then
-        assertThat(service.canDirectlyExecuteAssignmentChange(
+        assertThatThrownBy(() -> service.validateDirectAssignmentChangeExecution(
             managerId, Role.DEPARTMENT_MANAGER, departmentId, customer, changeRequest))
-            .isFalse();
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("担当者変更を直接実行する権限がありません");
     }
 
     @Test
@@ -183,9 +179,8 @@ class AssignmentChangeAuthorizationServiceTest {
             requesterId, UserId.generate(), departmentId, "理由");
         
         // When & Then
-        assertThat(service.canApproveAssignmentChange(
-            managerId, Role.DEPARTMENT_MANAGER, departmentId, changeRequest))
-            .isTrue();
+        assertThatNoException().isThrownBy(() -> service.validateAssignmentChangeApproval(
+            managerId, Role.DEPARTMENT_MANAGER, departmentId, changeRequest));
     }
 
     @Test
@@ -197,9 +192,10 @@ class AssignmentChangeAuthorizationServiceTest {
             requesterId, UserId.generate(), departmentId, "理由");
         
         // When & Then
-        assertThat(service.canApproveAssignmentChange(
+        assertThatThrownBy(() -> service.validateAssignmentChangeApproval(
             requesterId, Role.DEPARTMENT_MANAGER, departmentId, changeRequest))
-            .isFalse();
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("申請者本人は承認できません");
     }
 
     @Test
@@ -213,9 +209,10 @@ class AssignmentChangeAuthorizationServiceTest {
             requesterId, UserId.generate(), departmentId, "理由");
         
         // When & Then
-        assertThat(service.canApproveAssignmentChange(
+        assertThatThrownBy(() -> service.validateAssignmentChangeApproval(
             managerId, Role.DEPARTMENT_MANAGER, otherDepartmentId, changeRequest))
-            .isFalse();
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("この申請を承認する権限がありません");
     }
 
     @Test
@@ -227,9 +224,10 @@ class AssignmentChangeAuthorizationServiceTest {
             requesterId, UserId.generate(), departmentId, "理由");
         
         // When & Then
-        assertThat(service.canApproveAssignmentChange(
+        assertThatThrownBy(() -> service.validateAssignmentChangeApproval(
             UserId.generate(), Role.SALES_REPRESENTATIVE, departmentId, changeRequest))
-            .isFalse();
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("部長のみが担当者変更申請を承認できます");
     }
 
     @Test

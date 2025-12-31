@@ -13,10 +13,6 @@ import com.customermaster.domain.user.Role;
 import com.customermaster.domain.salesdepartment.SalesDepartmentId;
 import net.jqwik.api.*;
 
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThatNoException;
