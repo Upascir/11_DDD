@@ -92,7 +92,7 @@
 
 #### 4. 承認ワークフローの基本実装
 
-- [ ] 4.1 CustomerChangeRequest集約の実装
+- [x] 4.1 CustomerChangeRequest集約の実装
   - CustomerChangeRequestエンティティの実装
   - 顧客情報変更申請の基本機能
   - 承認・却下のビジネスロジック
