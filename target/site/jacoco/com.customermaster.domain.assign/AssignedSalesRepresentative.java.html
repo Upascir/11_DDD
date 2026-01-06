@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AssignedSalesRepresentative.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.assign</a> &gt; <span class="el_source">AssignedSalesRepresentative.java</span></div><h1>AssignedSalesRepresentative.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.assign;
+
+import com.customermaster.domain.shared.ValueObject;
+import com.customermaster.domain.user.UserId;
+import com.customermaster.domain.salesdepartment.SalesDepartmentId;
+
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+/**
+ * 担当営業者
+ * 
+ * 顧客に割り当てられた営業担当者の情報を管理する値オブジェクト
+ */
+public class AssignedSalesRepresentative extends ValueObject {
+    
+    private final UserId salesRepresentativeId;
+    private final SalesDepartmentId departmentId;
+    private final LocalDateTime assignedAt;
+    
+    /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+<span class="nc" id="L24">    private AssignedSalesRepresentative() {</span>
+<span class="nc" id="L25">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
+    }
+    
+    /**
+     * コンストラクタ
+     * 
+     * @param salesRepresentativeId 営業担当者ID（必須）
+     * @param departmentId 営業部ID（必須）
+     * @param assignedAt 割り当て日時（必須）
+     */
+    private AssignedSalesRepresentative(UserId salesRepresentativeId, SalesDepartmentId departmentId,
+<span class="fc" id="L36">                                       LocalDateTime assignedAt) {</span>
+<span class="fc" id="L37">        this.salesRepresentativeId = Objects.requireNonNull(salesRepresentativeId, &quot;営業担当者IDは必須です&quot;);</span>
+<span class="fc" id="L38">        this.departmentId = Objects.requireNonNull(departmentId, &quot;営業部IDは必須です&quot;);</span>
+<span class="fc" id="L39">        this.assignedAt = Objects.requireNonNull(assignedAt, &quot;割り当て日時は必須です&quot;);</span>
+<span class="fc" id="L40">    }</span>
+    
+    /**
+     * 担当営業者を作成
+     * 
+     * @param salesRepresentativeId 営業担当者ID
+     * @param departmentId 営業部ID
+     * @param assignedAt 割り当て日時
+     * @return AssignedSalesRepresentative
+     */
+    public static AssignedSalesRepresentative of(UserId salesRepresentativeId, 
+                                                SalesDepartmentId departmentId,
+                                                LocalDateTime assignedAt) {
+<span class="fc" id="L53">        return new AssignedSalesRepresentative(salesRepresentativeId, departmentId, assignedAt);</span>
+    }
+    
+    /**
+     * 担当営業者を作成（現在時刻で割り当て）
+     * 
+     * @param salesRepresentativeId 営業担当者ID
+     * @param departmentId 営業部ID
+     * @return AssignedSalesRepresentative
+     */
+    public static AssignedSalesRepresentative assignNow(UserId salesRepresentativeId,
+                                                       SalesDepartmentId departmentId) {
+<span class="fc" id="L65">        return new AssignedSalesRepresentative(salesRepresentativeId, departmentId, LocalDateTime.now());</span>
+    }
+    
+    // Getters
+<span class="fc" id="L69">    public UserId getSalesRepresentativeId() { return salesRepresentativeId; }</span>
+<span class="fc" id="L70">    public SalesDepartmentId getDepartmentId() { return departmentId; }</span>
+<span class="fc" id="L71">    public LocalDateTime getAssignedAt() { return assignedAt; }</span>
+    
+    /**
+     * 指定された営業担当者かどうかを判定
+     * 
+     * @param userId ユーザーID
+     * @return 指定された営業担当者の場合true
+     */
+    public boolean isAssignedTo(UserId userId) {
+<span class="fc" id="L80">        return salesRepresentativeId.equals(userId);</span>
+    }
+    
+    /**
+     * 指定された営業部に所属しているかどうかを判定
+     * 
+     * @param departmentId 営業部ID
+     * @return 指定された営業部に所属している場合true
+     */
+    public boolean belongsToDepartment(SalesDepartmentId departmentId) {
+<span class="fc" id="L90">        return this.departmentId.equals(departmentId);</span>
+    }
+    
+    /**
+     * 担当者を変更
+     * 
+     * @param newSalesRepresentativeId 新しい営業担当者ID
+     * @param newDepartmentId 新しい営業部ID
+     * @return 新しいAssignedSalesRepresentative
+     */
+    public AssignedSalesRepresentative changeTo(UserId newSalesRepresentativeId,
+                                               SalesDepartmentId newDepartmentId) {
+<span class="nc" id="L102">        return new AssignedSalesRepresentative(newSalesRepresentativeId, newDepartmentId, LocalDateTime.now());</span>
+    }
+    
+    /**
+     * 営業部間の担当者変更かどうかを判定
+     * 
+     * @param newDepartmentId 新しい営業部ID
+     * @return 営業部間の変更の場合true
+     */
+    public boolean isCrossDepartmentChange(SalesDepartmentId newDepartmentId) {
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        return !this.departmentId.equals(newDepartmentId);</span>
+    }
+    
+    @Override
+    public boolean equals(Object other) {
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        if (this == other) return true;</span>
+<span class="pc bpc" id="L118" title="2 of 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
+<span class="fc" id="L119">        AssignedSalesRepresentative that = (AssignedSalesRepresentative) other;</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        return Objects.equals(salesRepresentativeId, that.salesRepresentativeId) &amp;&amp;</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">               Objects.equals(departmentId, that.departmentId) &amp;&amp;</span>
+<span class="pc bnc" id="L122" title="All 2 branches missed.">               Objects.equals(assignedAt, that.assignedAt);</span>
+    }
+    
+    @Override
+    public int hashCode() {
+<span class="nc" id="L127">        return Objects.hash(salesRepresentativeId, departmentId, assignedAt);</span>
+    }
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L132">        return &quot;AssignedSalesRepresentative{&quot; +</span>
+               &quot;salesRepresentativeId=&quot; + salesRepresentativeId +
+               &quot;, departmentId=&quot; + departmentId +
+               &quot;, assignedAt=&quot; + assignedAt +
+               '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

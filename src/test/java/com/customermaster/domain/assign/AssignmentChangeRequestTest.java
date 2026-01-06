@@ -5,8 +5,6 @@ import com.customermaster.domain.salesdepartment.SalesDepartmentId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
-import java.time.LocalDateTime;
-
 import static org.assertj.core.api.Assertions.*;
 
 /**

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/DECORATION/1.8.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.8.0 
+         http://maven.apache.org/xsd/decoration-1.8.0.xsd">
+
+    <bannerLeft>
+        <name>顧客マスタ管理システム</name>
+        <src>images/logo.png</src>
+        <href>index.html</href>
+    </bannerLeft>
+
+    <bannerRight>
+        <name>Customer Master System</name>
+    </bannerRight>
+
+    <publishDate position="right"/>
+    <version position="right"/>
+
+    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.11.1</version>
+    </skin>
+
+    <custom>
+        <fluidoSkin>
+            <topBarEnabled>true</topBarEnabled>
+            <sideBarEnabled>true</sideBarEnabled>
+            <searchEnabled>true</searchEnabled>
+            <gitHub>
+                <projectId>customer-master-system</projectId>
+                <ribbonOrientation>right</ribbonOrientation>
+                <ribbonColor>darkblue</ribbonColor>
+            </gitHub>
+        </fluidoSkin>
+    </custom>
+
+    <body>
+        <menu name="概要">
+            <item name="ホーム" href="index.html"/>
+            <item name="プロジェクト概要" href="project-summary.html"/>
+            <item name="依存関係" href="dependencies.html"/>
+            <item name="チーム" href="team.html"/>
+        </menu>
+
+        <menu name="テストレポート">
+            <item name="テスト結果" href="surefire-report.html"/>
+            <item name="カバレッジレポート" href="jacoco/index.html"/>
+            <item name="テスト詳細" href="surefire-report.html"/>
+        </menu>
+
+        <menu name="品質管理">
+            <item name="コードカバレッジ" href="jacoco/index.html"/>
+            <item name="テスト統計" href="surefire-report.html"/>
+        </menu>
+
+        <menu name="開発情報">
+            <item name="ソースコード" href="scm.html"/>
+            <item name="依存関係情報" href="dependency-info.html"/>
+        </menu>
+
+        <footer>
+            © 2026 Customer Master System. All rights reserved.
+            Built with Maven and Spring Boot.
+        </footer>
+    </body>
+</project>

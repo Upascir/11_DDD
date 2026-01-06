@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomerStatus.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.customer</a> &gt; <span class="el_source">CustomerStatus.java</span></div><h1>CustomerStatus.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.customer;
+
+/**
+ * 顧客ステータス
+ * 
+ * 顧客の承認状態を表現する列挙型
+ */
+<span class="fc" id="L8">public enum CustomerStatus {</span>
+    
+    /**
+     * 下書き
+     * 新規登録時の初期状態
+     */
+<span class="fc" id="L14">    DRAFT(&quot;下書き&quot;),</span>
+    
+    /**
+     * 承認待ち
+     * 営業担当者が登録・更新申請を行った状態
+     */
+<span class="fc" id="L20">    PENDING_APPROVAL(&quot;承認待ち&quot;),</span>
+    
+    /**
+     * 承認済み
+     * 部長が承認した状態（通常の運用状態）
+     */
+<span class="fc" id="L26">    APPROVED(&quot;承認済み&quot;),</span>
+    
+    /**
+     * 却下
+     * 部長が却下した状態
+     */
+<span class="fc" id="L32">    REJECTED(&quot;却下&quot;),</span>
+    
+    /**
+     * 無効
+     * 取引終了などで無効化された状態
+     */
+<span class="fc" id="L38">    INACTIVE(&quot;無効&quot;);</span>
+    
+    private final String displayName;
+    
+    /**
+     * コンストラクタ
+     * 
+     * @param displayName 表示名
+     */
+<span class="fc" id="L47">    CustomerStatus(String displayName) {</span>
+<span class="fc" id="L48">        this.displayName = displayName;</span>
+<span class="fc" id="L49">    }</span>
+    
+    /**
+     * 表示名を取得
+     * 
+     * @return 表示名
+     */
+    public String getDisplayName() {
+<span class="fc" id="L57">        return displayName;</span>
+    }
+    
+    /**
+     * 承認待ち状態かどうかを判定
+     * 
+     * @return 承認待ち状態の場合true
+     */
+    public boolean isPendingApproval() {
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        return this == PENDING_APPROVAL;</span>
+    }
+    
+    /**
+     * 承認済み状態かどうかを判定
+     * 
+     * @return 承認済み状態の場合true
+     */
+    public boolean isApproved() {
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        return this == APPROVED;</span>
+    }
+    
+    /**
+     * 却下状態かどうかを判定
+     * 
+     * @return 却下状態の場合true
+     */
+    public boolean isRejected() {
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        return this == REJECTED;</span>
+    }
+    
+    /**
+     * 編集可能な状態かどうかを判定
+     * 
+     * @return 編集可能な場合true（下書き、却下状態）
+     */
+    public boolean isEditable() {
+<span class="pc bpc" id="L93" title="1 of 4 branches missed.">        return this == DRAFT || this == REJECTED;</span>
+    }
+    
+    /**
+     * アクティブな状態かどうかを判定
+     * 
+     * @return アクティブな場合true（無効以外）
+     */
+    public boolean isActive() {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        return this != INACTIVE;</span>
+    }
+    
+    /**
+     * 承認申請可能な状態かどうかを判定
+     * 
+     * @return 承認申請可能な場合true（下書き、却下状態）
+     */
+    public boolean canRequestApproval() {
+<span class="fc bfc" id="L111" title="All 4 branches covered.">        return this == DRAFT || this == REJECTED;</span>
+    }
+    
+    /**
+     * 承認可能な状態かどうかを判定
+     * 
+     * @return 承認可能な場合true（承認待ち状態）
+     */
+    public boolean canBeApproved() {
+<span class="fc bfc" id="L120" title="All 2 branches covered.">        return this == PENDING_APPROVAL;</span>
+    }
+    
+    /**
+     * 却下可能な状態かどうかを判定
+     * 
+     * @return 却下可能な場合true（承認待ち状態）
+     */
+    public boolean canBeRejected() {
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        return this == PENDING_APPROVAL;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

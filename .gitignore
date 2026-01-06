@@ -25,7 +25,9 @@ hs_err_pid*
 replay_pid*
 
 # Maven
-target/
+target/*
+# レポートファイルはGitで管理する
+!target/site/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomerChangeRequestId.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.customer</a> &gt; <span class="el_source">CustomerChangeRequestId.java</span></div><h1>CustomerChangeRequestId.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.customer;
+
+import com.customermaster.domain.shared.EntityId;
+
+/**
+ * 顧客変更申請ID
+ * 
+ * 顧客情報変更申請を一意に識別するためのエンティティID
+ */
+public class CustomerChangeRequestId extends EntityId {
+    
+    /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+    private CustomerChangeRequestId() {
+<span class="nc" id="L16">        super(&quot;&quot;);</span>
+<span class="nc" id="L17">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
+    }
+    
+    /**
+     * コンストラクタ
+     * 
+     * @param value ID値
+     */
+    private CustomerChangeRequestId(String value) {
+<span class="fc" id="L26">        super(value);</span>
+<span class="fc" id="L27">    }</span>
+    
+    /**
+     * 新しい顧客変更申請IDを生成
+     * 
+     * @return 新しいCustomerChangeRequestId
+     */
+    public static CustomerChangeRequestId generate() {
+<span class="fc" id="L35">        return new CustomerChangeRequestId(generateNewId());</span>
+    }
+    
+    /**
+     * 既存の値から顧客変更申請IDを作成
+     * 
+     * @param value ID値
+     * @return CustomerChangeRequestId
+     */
+    public static CustomerChangeRequestId of(String value) {
+<span class="nc" id="L45">        return new CustomerChangeRequestId(value);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

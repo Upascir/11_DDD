@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomerBasicInfo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.customer</a> &gt; <span class="el_source">CustomerBasicInfo.java</span></div><h1>CustomerBasicInfo.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.customer;
+
+import com.customermaster.domain.shared.ValueObject;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Objects;
+
+/**
+ * 顧客基本情報
+ * 
+ * 顧客の基本的な企業情報を管理する値オブジェクト
+ */
+public class CustomerBasicInfo extends ValueObject {
+    
+    private final CustomerName customerName;
+    private final String customerNameKana;
+    private final String industryClassification;
+    private final LocalDate establishedDate;
+    private final Integer employeeCount;
+    private final BigDecimal capital;
+    private final BigDecimal annualRevenue;
+    
+    /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+<span class="nc" id="L27">    private CustomerBasicInfo() {</span>
+<span class="nc" id="L28">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
+    }
+    
+    /**
+     * コンストラクタ
+     * 
+     * @param customerName 顧客名（必須）
+     * @param customerNameKana 顧客名カナ（必須）
+     * @param industryClassification 業界分類（必須）
+     * @param establishedDate 設立年月日（任意）
+     * @param employeeCount 従業員数（任意）
+     * @param capital 資本金（任意）
+     * @param annualRevenue 年商（任意）
+     */
+    private CustomerBasicInfo(CustomerName customerName, String customerNameKana, 
+                             String industryClassification, LocalDate establishedDate,
+<span class="fc" id="L44">                             Integer employeeCount, BigDecimal capital, BigDecimal annualRevenue) {</span>
+<span class="fc" id="L45">        this.customerName = Objects.requireNonNull(customerName, &quot;顧客名は必須です&quot;);</span>
+<span class="fc" id="L46">        this.customerNameKana = validateRequired(customerNameKana, &quot;顧客名カナ&quot;);</span>
+<span class="fc" id="L47">        this.industryClassification = validateRequired(industryClassification, &quot;業界分類&quot;);</span>
+<span class="fc" id="L48">        this.establishedDate = establishedDate;</span>
+<span class="fc" id="L49">        this.employeeCount = validateEmployeeCount(employeeCount);</span>
+<span class="fc" id="L50">        this.capital = validateAmount(capital, &quot;資本金&quot;);</span>
+<span class="fc" id="L51">        this.annualRevenue = validateAmount(annualRevenue, &quot;年商&quot;);</span>
+<span class="fc" id="L52">    }</span>
+    
+    /**
+     * 必須項目のバリデーション
+     */
+    private String validateRequired(String value, String fieldName) {
+<span class="pc bpc" id="L58" title="2 of 4 branches missed.">        if (value == null || value.trim().isEmpty()) {</span>
+<span class="nc" id="L59">            throw new IllegalArgumentException(fieldName + &quot;は必須です&quot;);</span>
+        }
+<span class="fc" id="L61">        return value.trim();</span>
+    }
+    
+    /**
+     * 従業員数のバリデーション
+     */
+    private Integer validateEmployeeCount(Integer employeeCount) {
+<span class="pc bpc" id="L68" title="1 of 4 branches missed.">        if (employeeCount != null &amp;&amp; employeeCount &lt; 0) {</span>
+<span class="nc" id="L69">            throw new IllegalArgumentException(&quot;従業員数は0以上で入力してください&quot;);</span>
+        }
+<span class="fc" id="L71">        return employeeCount;</span>
+    }
+    
+    /**
+     * 金額のバリデーション
+     */
+    private BigDecimal validateAmount(BigDecimal amount, String fieldName) {
+<span class="pc bpc" id="L78" title="1 of 4 branches missed.">        if (amount != null &amp;&amp; amount.compareTo(BigDecimal.ZERO) &lt; 0) {</span>
+<span class="nc" id="L79">            throw new IllegalArgumentException(fieldName + &quot;は0以上で入力してください&quot;);</span>
+        }
+<span class="fc" id="L81">        return amount;</span>
+    }
+    
+    /**
+     * 顧客基本情報を作成
+     * 
+     * @param customerName 顧客名
+     * @param customerNameKana 顧客名カナ
+     * @param industryClassification 業界分類
+     * @param establishedDate 設立年月日
+     * @param employeeCount 従業員数
+     * @param capital 資本金
+     * @param annualRevenue 年商
+     * @return CustomerBasicInfo
+     */
+    public static CustomerBasicInfo of(CustomerName customerName, String customerNameKana,
+                                      String industryClassification, LocalDate establishedDate,
+                                      Integer employeeCount, BigDecimal capital, BigDecimal annualRevenue) {
+<span class="fc" id="L99">        return new CustomerBasicInfo(customerName, customerNameKana, industryClassification,</span>
+                                   establishedDate, employeeCount, capital, annualRevenue);
+    }
+    
+    /**
+     * 顧客基本情報を作成（必須項目のみ）
+     * 
+     * @param customerName 顧客名
+     * @param customerNameKana 顧客名カナ
+     * @param industryClassification 業界分類
+     * @return CustomerBasicInfo
+     */
+    public static CustomerBasicInfo of(CustomerName customerName, String customerNameKana,
+                                      String industryClassification) {
+<span class="fc" id="L113">        return new CustomerBasicInfo(customerName, customerNameKana, industryClassification,</span>
+                                   null, null, null, null);
+    }
+    
+    // Getters
+<span class="fc" id="L118">    public CustomerName getCustomerName() { return customerName; }</span>
+<span class="fc" id="L119">    public String getCustomerNameKana() { return customerNameKana; }</span>
+<span class="fc" id="L120">    public String getIndustryClassification() { return industryClassification; }</span>
+<span class="nc" id="L121">    public LocalDate getEstablishedDate() { return establishedDate; }</span>
+<span class="nc" id="L122">    public Integer getEmployeeCount() { return employeeCount; }</span>
+<span class="nc" id="L123">    public BigDecimal getCapital() { return capital; }</span>
+<span class="nc" id="L124">    public BigDecimal getAnnualRevenue() { return annualRevenue; }</span>
+    
+    /**
+     * 設立年月日が設定されているかチェック
+     */
+    public boolean hasEstablishedDate() {
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        return establishedDate != null;</span>
+    }
+    
+    /**
+     * 従業員数が設定されているかチェック
+     */
+    public boolean hasEmployeeCount() {
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        return employeeCount != null;</span>
+    }
+    
+    /**
+     * 資本金が設定されているかチェック
+     */
+    public boolean hasCapital() {
+<span class="fc bfc" id="L144" title="All 2 branches covered.">        return capital != null;</span>
+    }
+    
+    /**
+     * 年商が設定されているかチェック
+     */
+    public boolean hasAnnualRevenue() {
+<span class="fc bfc" id="L151" title="All 2 branches covered.">        return annualRevenue != null;</span>
+    }
+    
+    @Override
+    public boolean equals(Object other) {
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        if (this == other) return true;</span>
+<span class="pc bpc" id="L157" title="2 of 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
+<span class="fc" id="L158">        CustomerBasicInfo that = (CustomerBasicInfo) other;</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        return Objects.equals(customerName, that.customerName) &amp;&amp;</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">               Objects.equals(customerNameKana, that.customerNameKana) &amp;&amp;</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">               Objects.equals(industryClassification, that.industryClassification) &amp;&amp;</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">               Objects.equals(establishedDate, that.establishedDate) &amp;&amp;</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">               Objects.equals(employeeCount, that.employeeCount) &amp;&amp;</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">               Objects.equals(capital, that.capital) &amp;&amp;</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">               Objects.equals(annualRevenue, that.annualRevenue);</span>
+    }
+    
+    @Override
+    public int hashCode() {
+<span class="nc" id="L170">        return Objects.hash(customerName, customerNameKana, industryClassification,</span>
+                          establishedDate, employeeCount, capital, annualRevenue);
+    }
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L176">        return &quot;CustomerBasicInfo{&quot; +</span>
+               &quot;customerName=&quot; + customerName +
+               &quot;, customerNameKana='&quot; + customerNameKana + '\'' +
+               &quot;, industryClassification='&quot; + industryClassification + '\'' +
+               &quot;, establishedDate=&quot; + establishedDate +
+               &quot;, employeeCount=&quot; + employeeCount +
+               &quot;, capital=&quot; + capital +
+               &quot;, annualRevenue=&quot; + annualRevenue +
+               '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Customer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.customer</a> &gt; <span class="el_source">Customer.java</span></div><h1>Customer.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.customer;
+
+import com.customermaster.domain.shared.Entity;
+import com.customermaster.domain.shared.Address;
+import com.customermaster.domain.shared.ContactInfo;
+import com.customermaster.domain.shared.BankAccount;
+import com.customermaster.domain.assign.AssignmentChangeRequest;
+import com.customermaster.domain.assign.AssignedSalesRepresentative;
+import com.customermaster.domain.user.UserId;
+import com.customermaster.domain.salesdepartment.SalesDepartmentId;
+
+import java.time.LocalDateTime;
+import java.util.*;
+
+/**
+ * 顧客
+ * 
+ * 顧客情報を管理する集約ルート
+ */
+public class Customer extends Entity&lt;CustomerId&gt; {
+    
+    private CustomerBasicInfo basicInfo;
+    private Address headquartersAddress;
+    private List&lt;Address&gt; branchAddresses;
+    private ContactInfo representativeContact;
+    private List&lt;ContactInfo&gt; contactPersons;
+    private BankAccount mainBankAccount;
+    private List&lt;BankAccount&gt; subBankAccounts;
+    private AssignedSalesRepresentative assignedSalesRep;
+    private CustomerStatus status;
+    private CreditInfo creditInfo;
+    
+    /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+    private Customer() {
+<span class="nc" id="L37">        super(null);</span>
+<span class="nc" id="L38">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
+    }
+    
+    /**
+     * コンストラクタ（新規顧客用）
+     * 
+     * @param customerId 顧客ID
+     * @param basicInfo 基本情報
+     * @param headquartersAddress 本社住所
+     * @param representativeContact 代表連絡先
+     * @param mainBankAccount メイン口座
+     * @param assignedSalesRep 担当営業者
+     * @param creditInfo 信用情報
+     */
+    private Customer(CustomerId customerId, CustomerBasicInfo basicInfo, Address headquartersAddress,
+                    ContactInfo representativeContact, BankAccount mainBankAccount,
+                    AssignedSalesRepresentative assignedSalesRep, CreditInfo creditInfo) {
+<span class="fc" id="L55">        super(customerId);</span>
+<span class="fc" id="L56">        this.basicInfo = Objects.requireNonNull(basicInfo, &quot;基本情報は必須です&quot;);</span>
+<span class="fc" id="L57">        this.headquartersAddress = Objects.requireNonNull(headquartersAddress, &quot;本社住所は必須です&quot;);</span>
+<span class="fc" id="L58">        this.branchAddresses = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L59">        this.representativeContact = Objects.requireNonNull(representativeContact, &quot;代表連絡先は必須です&quot;);</span>
+<span class="fc" id="L60">        this.contactPersons = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L61">        this.mainBankAccount = Objects.requireNonNull(mainBankAccount, &quot;メイン口座は必須です&quot;);</span>
+<span class="fc" id="L62">        this.subBankAccounts = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L63">        this.assignedSalesRep = Objects.requireNonNull(assignedSalesRep, &quot;担当営業者は必須です&quot;);</span>
+<span class="fc" id="L64">        this.status = CustomerStatus.DRAFT;</span>
+<span class="fc" id="L65">        this.creditInfo = Objects.requireNonNull(creditInfo, &quot;信用情報は必須です&quot;);</span>
+<span class="fc" id="L66">    }</span>
+    
+    /**
+     * コンストラクタ（既存顧客復元用）
+     * 
+     * @param customerId 顧客ID
+     * @param basicInfo 基本情報
+     * @param headquartersAddress 本社住所
+     * @param branchAddresses 支店住所リスト
+     * @param representativeContact 代表連絡先
+     * @param contactPersons 担当者連絡先リスト
+     * @param mainBankAccount メイン口座
+     * @param subBankAccounts サブ口座リスト
+     * @param assignedSalesRep 担当営業者
+     * @param status ステータス
+     * @param creditInfo 信用情報
+     * @param createdAt 作成日時
+     * @param updatedAt 更新日時
+     */
+    private Customer(CustomerId customerId, CustomerBasicInfo basicInfo, Address headquartersAddress,
+                    List&lt;Address&gt; branchAddresses, ContactInfo representativeContact, 
+                    List&lt;ContactInfo&gt; contactPersons, BankAccount mainBankAccount,
+                    List&lt;BankAccount&gt; subBankAccounts, AssignedSalesRepresentative assignedSalesRep,
+                    CustomerStatus status, CreditInfo creditInfo, 
+                    LocalDateTime createdAt, LocalDateTime updatedAt) {
+<span class="nc" id="L91">        super(customerId, createdAt, updatedAt);</span>
+<span class="nc" id="L92">        this.basicInfo = Objects.requireNonNull(basicInfo, &quot;基本情報は必須です&quot;);</span>
+<span class="nc" id="L93">        this.headquartersAddress = Objects.requireNonNull(headquartersAddress, &quot;本社住所は必須です&quot;);</span>
+<span class="nc" id="L94">        this.branchAddresses = new ArrayList&lt;&gt;(Objects.requireNonNull(branchAddresses, &quot;支店住所リストは必須です&quot;));</span>
+<span class="nc" id="L95">        this.representativeContact = Objects.requireNonNull(representativeContact, &quot;代表連絡先は必須です&quot;);</span>
+<span class="nc" id="L96">        this.contactPersons = new ArrayList&lt;&gt;(Objects.requireNonNull(contactPersons, &quot;担当者連絡先リストは必須です&quot;));</span>
+<span class="nc" id="L97">        this.mainBankAccount = Objects.requireNonNull(mainBankAccount, &quot;メイン口座は必須です&quot;);</span>
+<span class="nc" id="L98">        this.subBankAccounts = new ArrayList&lt;&gt;(Objects.requireNonNull(subBankAccounts, &quot;サブ口座リストは必須です&quot;));</span>
+<span class="nc" id="L99">        this.assignedSalesRep = Objects.requireNonNull(assignedSalesRep, &quot;担当営業者は必須です&quot;);</span>
+<span class="nc" id="L100">        this.status = Objects.requireNonNull(status, &quot;ステータスは必須です&quot;);</span>
+<span class="nc" id="L101">        this.creditInfo = Objects.requireNonNull(creditInfo, &quot;信用情報は必須です&quot;);</span>
+        
+<span class="nc" id="L103">        validateInvariants();</span>
+<span class="nc" id="L104">    }</span>
+    
+    /**
+     * 新規顧客を作成
+     * 
+     * @param customerId 顧客ID
+     * @param basicInfo 基本情報
+     * @param headquartersAddress 本社住所
+     * @param representativeContact 代表連絡先
+     * @param mainBankAccount メイン口座
+     * @param assignedSalesRep 担当営業者
+     * @param creditInfo 信用情報
+     * @return Customer
+     */
+    public static Customer create(CustomerId customerId, CustomerBasicInfo basicInfo, 
+                                 Address headquartersAddress, ContactInfo representativeContact,
+                                 BankAccount mainBankAccount, AssignedSalesRepresentative assignedSalesRep,
+                                 CreditInfo creditInfo) {
+<span class="fc" id="L122">        return new Customer(customerId, basicInfo, headquartersAddress, representativeContact,</span>
+                          mainBankAccount, assignedSalesRep, creditInfo);
+    }
+    
+    /**
+     * 既存顧客を復元
+     * 
+     * @param customerId 顧客ID
+     * @param basicInfo 基本情報
+     * @param headquartersAddress 本社住所
+     * @param branchAddresses 支店住所リスト
+     * @param representativeContact 代表連絡先
+     * @param contactPersons 担当者連絡先リスト
+     * @param mainBankAccount メイン口座
+     * @param subBankAccounts サブ口座リスト
+     * @param assignedSalesRep 担当営業者
+     * @param status ステータス
+     * @param creditInfo 信用情報
+     * @param createdAt 作成日時
+     * @param updatedAt 更新日時
+     * @return Customer
+     */
+    public static Customer restore(CustomerId customerId, CustomerBasicInfo basicInfo,
+                                  Address headquartersAddress, List&lt;Address&gt; branchAddresses,
+                                  ContactInfo representativeContact, List&lt;ContactInfo&gt; contactPersons,
+                                  BankAccount mainBankAccount, List&lt;BankAccount&gt; subBankAccounts,
+                                  AssignedSalesRepresentative assignedSalesRep, CustomerStatus status,
+                                  CreditInfo creditInfo, LocalDateTime createdAt, LocalDateTime updatedAt) {
+<span class="nc" id="L150">        return new Customer(customerId, basicInfo, headquartersAddress, branchAddresses,</span>
+                          representativeContact, contactPersons, mainBankAccount, subBankAccounts,
+                          assignedSalesRep, status, creditInfo, createdAt, updatedAt);
+    }
+    
+    // ビジネスメソッド
+    
+    /**
+     * 支店住所を追加
+     * 
+     * @param branchAddress 支店住所
+     */
+    public void addBranchAddress(Address branchAddress) {
+<span class="fc" id="L163">        Objects.requireNonNull(branchAddress, &quot;支店住所は必須です&quot;);</span>
+<span class="fc" id="L164">        this.branchAddresses.add(branchAddress);</span>
+<span class="fc" id="L165">        markAsUpdated();</span>
+<span class="fc" id="L166">    }</span>
+    
+    /**
+     * 支店住所を削除
+     * 
+     * @param index 削除するインデックス
+     */
+    public void removeBranchAddress(int index) {
+<span class="pc bpc" id="L174" title="2 of 4 branches missed.">        if (index &lt; 0 || index &gt;= branchAddresses.size()) {</span>
+<span class="nc" id="L175">            throw new IllegalArgumentException(&quot;無効なインデックスです&quot;);</span>
+        }
+<span class="fc" id="L177">        this.branchAddresses.remove(index);</span>
+<span class="fc" id="L178">        markAsUpdated();</span>
+<span class="fc" id="L179">    }</span>
+    
+    /**
+     * 担当者連絡先を追加
+     * 
+     * @param contactPerson 担当者連絡先
+     */
+    public void addContactPerson(ContactInfo contactPerson) {
+<span class="fc" id="L187">        Objects.requireNonNull(contactPerson, &quot;担当者連絡先は必須です&quot;);</span>
+<span class="fc" id="L188">        this.contactPersons.add(contactPerson);</span>
+<span class="fc" id="L189">        markAsUpdated();</span>
+<span class="fc" id="L190">    }</span>
+    
+    /**
+     * 担当者連絡先を削除
+     * 
+     * @param index 削除するインデックス
+     */
+    public void removeContactPerson(int index) {
+<span class="nc bnc" id="L198" title="All 4 branches missed.">        if (index &lt; 0 || index &gt;= contactPersons.size()) {</span>
+<span class="nc" id="L199">            throw new IllegalArgumentException(&quot;無効なインデックスです&quot;);</span>
+        }
+<span class="nc" id="L201">        this.contactPersons.remove(index);</span>
+<span class="nc" id="L202">        markAsUpdated();</span>
+<span class="nc" id="L203">    }</span>
+    
+    /**
+     * サブ口座を追加
+     * 
+     * @param subBankAccount サブ口座
+     */
+    public void addSubBankAccount(BankAccount subBankAccount) {
+<span class="fc" id="L211">        Objects.requireNonNull(subBankAccount, &quot;サブ口座は必須です&quot;);</span>
+        
+<span class="fc bfc" id="L213" title="All 2 branches covered.">        if (subBankAccounts.size() &gt;= 3) {</span>
+<span class="fc" id="L214">            throw new IllegalStateException(&quot;サブ口座は最大3件まで登録できます&quot;);</span>
+        }
+        
+<span class="fc" id="L217">        this.subBankAccounts.add(subBankAccount);</span>
+<span class="fc" id="L218">        markAsUpdated();</span>
+<span class="fc" id="L219">    }</span>
+    
+    /**
+     * サブ口座を削除
+     * 
+     * @param index 削除するインデックス
+     */
+    public void removeSubBankAccount(int index) {
+<span class="nc bnc" id="L227" title="All 4 branches missed.">        if (index &lt; 0 || index &gt;= subBankAccounts.size()) {</span>
+<span class="nc" id="L228">            throw new IllegalArgumentException(&quot;無効なインデックスです&quot;);</span>
+        }
+<span class="nc" id="L230">        this.subBankAccounts.remove(index);</span>
+<span class="nc" id="L231">        markAsUpdated();</span>
+<span class="nc" id="L232">    }</span>
+    
+    /**
+     * 担当営業者を変更
+     * 
+     * @param newAssignedSalesRep 新しい担当営業者
+     */
+    public void assignSalesRepresentative(AssignedSalesRepresentative newAssignedSalesRep) {
+<span class="fc" id="L240">        this.assignedSalesRep = Objects.requireNonNull(newAssignedSalesRep, &quot;担当営業者は必須です&quot;);</span>
+<span class="fc" id="L241">        markAsUpdated();</span>
+<span class="fc" id="L242">    }</span>
+    
+    /**
+     * 担当者変更申請を作成
+     * 
+     * @param requesterId 申請者ID
+     * @param newSalesRepId 新しい営業担当者ID
+     * @param newDepartmentId 新しい営業部ID
+     * @param reason 変更理由
+     * @return 担当者変更申請
+     */
+    public AssignmentChangeRequest createAssignmentChangeRequest(UserId requesterId,
+                                                               UserId newSalesRepId,
+                                                               SalesDepartmentId newDepartmentId,
+                                                               String reason) {
+        // 編集可能な状態かチェック
+<span class="fc bfc" id="L258" title="All 2 branches covered.">        if (!isEditable()) {</span>
+<span class="fc" id="L259">            throw new IllegalStateException(&quot;現在の状態では担当者変更申請できません: &quot; + status.getDisplayName());</span>
+        }
+        
+<span class="fc" id="L262">        return AssignmentChangeRequest.create(requesterId, assignedSalesRep, </span>
+                                            newSalesRepId, newDepartmentId, reason);
+    }
+    
+    /**
+     * 担当者変更を直接実行
+     * 
+     * @param newSalesRepId 新しい営業担当者ID
+     * @param newDepartmentId 新しい営業部ID
+     */
+    public void executeAssignmentChange(UserId newSalesRepId, SalesDepartmentId newDepartmentId) {
+<span class="fc" id="L273">        AssignedSalesRepresentative newAssignment = AssignedSalesRepresentative.assignNow(</span>
+            newSalesRepId, newDepartmentId);
+<span class="fc" id="L275">        assignSalesRepresentative(newAssignment);</span>
+<span class="fc" id="L276">    }</span>
+    
+    /**
+     * 担当者変更申請に基づいて担当者を変更
+     * 
+     * @param changeRequest 変更申請
+     */
+    public void executeAssignmentChange(AssignmentChangeRequest changeRequest) {
+<span class="fc" id="L284">        Objects.requireNonNull(changeRequest, &quot;変更申請は必須です&quot;);</span>
+        
+        // 申請の有効性をチェック
+<span class="fc bfc" id="L287" title="All 2 branches covered.">        if (!assignedSalesRep.equals(changeRequest.getCurrentAssignment())) {</span>
+<span class="fc" id="L288">            throw new IllegalStateException(&quot;申請時の担当者と現在の担当者が一致しません&quot;);</span>
+        }
+        
+<span class="fc" id="L291">        assignSalesRepresentative(changeRequest.getNewAssignment());</span>
+<span class="fc" id="L292">    }</span>
+    
+    /**
+     * 基本情報を更新
+     * 
+     * @param newBasicInfo 新しい基本情報
+     */
+    public void updateBasicInfo(CustomerBasicInfo newBasicInfo) {
+<span class="nc" id="L300">        this.basicInfo = Objects.requireNonNull(newBasicInfo, &quot;基本情報は必須です&quot;);</span>
+<span class="nc" id="L301">        markAsUpdated();</span>
+<span class="nc" id="L302">    }</span>
+    
+    /**
+     * 本社住所を更新
+     * 
+     * @param newHeadquartersAddress 新しい本社住所
+     */
+    public void updateHeadquartersAddress(Address newHeadquartersAddress) {
+<span class="nc" id="L310">        this.headquartersAddress = Objects.requireNonNull(newHeadquartersAddress, &quot;本社住所は必須です&quot;);</span>
+<span class="nc" id="L311">        markAsUpdated();</span>
+<span class="nc" id="L312">    }</span>
+    
+    /**
+     * 代表連絡先を更新
+     * 
+     * @param newRepresentativeContact 新しい代表連絡先
+     */
+    public void updateRepresentativeContact(ContactInfo newRepresentativeContact) {
+<span class="nc" id="L320">        this.representativeContact = Objects.requireNonNull(newRepresentativeContact, &quot;代表連絡先は必須です&quot;);</span>
+<span class="nc" id="L321">        markAsUpdated();</span>
+<span class="nc" id="L322">    }</span>
+    
+    /**
+     * メイン口座を更新
+     * 
+     * @param newMainBankAccount 新しいメイン口座
+     */
+    public void updateMainBankAccount(BankAccount newMainBankAccount) {
+<span class="nc" id="L330">        this.mainBankAccount = Objects.requireNonNull(newMainBankAccount, &quot;メイン口座は必須です&quot;);</span>
+<span class="nc" id="L331">        markAsUpdated();</span>
+<span class="nc" id="L332">    }</span>
+    
+    /**
+     * 信用情報を更新
+     * 
+     * @param newCreditInfo 新しい信用情報
+     */
+    public void updateCreditInfo(CreditInfo newCreditInfo) {
+<span class="nc" id="L340">        this.creditInfo = Objects.requireNonNull(newCreditInfo, &quot;信用情報は必須です&quot;);</span>
+<span class="nc" id="L341">        markAsUpdated();</span>
+<span class="nc" id="L342">    }</span>
+    
+    /**
+     * 承認申請
+     */
+    public void requestApproval() {
+<span class="fc bfc" id="L348" title="All 2 branches covered.">        if (!status.canRequestApproval()) {</span>
+<span class="fc" id="L349">            throw new IllegalStateException(&quot;現在の状態では承認申請できません: &quot; + status.getDisplayName());</span>
+        }
+<span class="fc" id="L351">        this.status = CustomerStatus.PENDING_APPROVAL;</span>
+<span class="fc" id="L352">        markAsUpdated();</span>
+<span class="fc" id="L353">    }</span>
+    
+    /**
+     * 承認
+     */
+    public void approve() {
+<span class="fc bfc" id="L359" title="All 2 branches covered.">        if (!status.canBeApproved()) {</span>
+<span class="fc" id="L360">            throw new IllegalStateException(&quot;現在の状態では承認できません: &quot; + status.getDisplayName());</span>
+        }
+<span class="fc" id="L362">        this.status = CustomerStatus.APPROVED;</span>
+<span class="fc" id="L363">        markAsUpdated();</span>
+<span class="fc" id="L364">    }</span>
+    
+    /**
+     * 却下
+     */
+    public void reject() {
+<span class="pc bpc" id="L370" title="1 of 2 branches missed.">        if (!status.canBeRejected()) {</span>
+<span class="nc" id="L371">            throw new IllegalStateException(&quot;現在の状態では却下できません: &quot; + status.getDisplayName());</span>
+        }
+<span class="fc" id="L373">        this.status = CustomerStatus.REJECTED;</span>
+<span class="fc" id="L374">        markAsUpdated();</span>
+<span class="fc" id="L375">    }</span>
+    
+    /**
+     * 無効化
+     */
+    public void deactivate() {
+<span class="nc" id="L381">        this.status = CustomerStatus.INACTIVE;</span>
+<span class="nc" id="L382">        markAsUpdated();</span>
+<span class="nc" id="L383">    }</span>
+    
+    /**
+     * 支払い信頼性を判定
+     * 
+     * @return 支払い信頼性
+     */
+    public boolean isPaymentReliable() {
+<span class="fc" id="L391">        return creditInfo.isPaymentReliable();</span>
+    }
+    
+    /**
+     * 指定された営業担当者が担当しているかどうかを判定
+     * 
+     * @param userId ユーザーID
+     * @return 担当している場合true
+     */
+    public boolean isAssignedTo(UserId userId) {
+<span class="fc" id="L401">        return assignedSalesRep.isAssignedTo(userId);</span>
+    }
+    
+    /**
+     * 指定された営業部に所属しているかどうかを判定
+     * 
+     * @param departmentId 営業部ID
+     * @return 所属している場合true
+     */
+    public boolean belongsToDepartment(SalesDepartmentId departmentId) {
+<span class="fc" id="L411">        return assignedSalesRep.belongsToDepartment(departmentId);</span>
+    }
+    
+    /**
+     * 編集可能かどうかを判定
+     * 
+     * @return 編集可能な場合true
+     */
+    public boolean isEditable() {
+<span class="fc" id="L420">        return status.isEditable();</span>
+    }
+    
+    /**
+     * 承認待ち状態かどうかを判定
+     * 
+     * @return 承認待ち状態の場合true
+     */
+    public boolean isPendingApproval() {
+<span class="fc" id="L429">        return status.isPendingApproval();</span>
+    }
+    
+    /**
+     * 不変条件を検証
+     */
+    private void validateInvariants() {
+        // サブ口座は最大3件まで
+<span class="nc bnc" id="L437" title="All 2 branches missed.">        if (subBankAccounts.size() &gt; 3) {</span>
+<span class="nc" id="L438">            throw new IllegalStateException(&quot;サブ口座は最大3件まで登録できます&quot;);</span>
+        }
+<span class="nc" id="L440">    }</span>
+    
+    // Getters
+    
+<span class="fc" id="L444">    public CustomerBasicInfo getBasicInfo() { return basicInfo; }</span>
+<span class="fc" id="L445">    public Address getHeadquartersAddress() { return headquartersAddress; }</span>
+<span class="fc" id="L446">    public List&lt;Address&gt; getBranchAddresses() { return Collections.unmodifiableList(branchAddresses); }</span>
+<span class="fc" id="L447">    public ContactInfo getRepresentativeContact() { return representativeContact; }</span>
+<span class="fc" id="L448">    public List&lt;ContactInfo&gt; getContactPersons() { return Collections.unmodifiableList(contactPersons); }</span>
+<span class="fc" id="L449">    public BankAccount getMainBankAccount() { return mainBankAccount; }</span>
+<span class="fc" id="L450">    public List&lt;BankAccount&gt; getSubBankAccounts() { return Collections.unmodifiableList(subBankAccounts); }</span>
+<span class="fc" id="L451">    public AssignedSalesRepresentative getAssignedSalesRep() { return assignedSalesRep; }</span>
+<span class="fc" id="L452">    public CustomerStatus getStatus() { return status; }</span>
+<span class="fc" id="L453">    public CreditInfo getCreditInfo() { return creditInfo; }</span>
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L457">        return &quot;Customer{&quot; +</span>
+<span class="nc" id="L458">               &quot;id=&quot; + getId() +</span>
+<span class="nc" id="L459">               &quot;, customerName=&quot; + basicInfo.getCustomerName() +</span>
+               &quot;, status=&quot; + status +
+<span class="nc" id="L461">               &quot;, assignedSalesRep=&quot; + assignedSalesRep.getSalesRepresentativeId() +</span>
+               '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

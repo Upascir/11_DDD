@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomerChangeRequest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.customer</a> &gt; <span class="el_source">CustomerChangeRequest.java</span></div><h1>CustomerChangeRequest.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.customer;
+
+import com.customermaster.domain.shared.Entity;
+import com.customermaster.domain.user.UserId;
+
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+/**
+ * 顧客変更申請
+ * 
+ * 顧客情報の変更申請を管理する集約ルート
+ * 承認ワークフローの中核となるエンティティ
+ */
+public class CustomerChangeRequest extends Entity&lt;CustomerChangeRequestId&gt; {
+    
+    private final CustomerId customerId;
+    private final CustomerSnapshot originalData;
+    private CustomerSnapshot proposedData;
+    private final UserId requesterId;
+    private Approval approval;  // 承認情報（常に非null、初期状態はPENDING）
+    private final LocalDateTime requestedAt;
+    private final LocalDateTime deadline;
+    private String requestReason;
+    
+    /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+    private CustomerChangeRequest() {
+<span class="nc" id="L30">        super(null);</span>
+<span class="nc" id="L31">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
+    }
+    
+    /**
+     * コンストラクタ
+     * 
+     * @param requestId 申請ID
+     * @param customerId 顧客ID
+     * @param originalData 変更前データ
+     * @param proposedData 変更後データ
+     * @param requesterId 申請者ID
+     * @param requestReason 申請理由
+     */
+    private CustomerChangeRequest(CustomerChangeRequestId requestId, CustomerId customerId,
+                                CustomerSnapshot originalData, CustomerSnapshot proposedData,
+                                UserId requesterId, String requestReason) {
+<span class="fc" id="L47">        super(requestId);</span>
+<span class="fc" id="L48">        this.customerId = Objects.requireNonNull(customerId, &quot;顧客IDは必須です&quot;);</span>
+<span class="fc" id="L49">        this.originalData = Objects.requireNonNull(originalData, &quot;変更前データは必須です&quot;);</span>
+<span class="fc" id="L50">        this.proposedData = Objects.requireNonNull(proposedData, &quot;変更後データは必須です&quot;);</span>
+<span class="fc" id="L51">        this.requesterId = Objects.requireNonNull(requesterId, &quot;申請者IDは必須です&quot;);</span>
+<span class="fc" id="L52">        this.requestReason = validateRequestReason(requestReason);</span>
+<span class="fc" id="L53">        this.approval = Approval.createPending();  // PENDING状態のApprovalを作成</span>
+<span class="fc" id="L54">        this.requestedAt = LocalDateTime.now();</span>
+<span class="fc" id="L55">        this.deadline = calculateDeadline(this.requestedAt);</span>
+        
+<span class="fc" id="L57">        validateProposedData();</span>
+<span class="fc" id="L58">    }</span>
+    
+    /**
+     * 顧客変更申請を作成
+     * 
+     * @param customerId 顧客ID
+     * @param originalData 変更前データ
+     * @param proposedData 変更後データ
+     * @param requesterId 申請者ID
+     * @param requestReason 申請理由
+     * @return CustomerChangeRequest
+     */
+    public static CustomerChangeRequest create(CustomerId customerId, CustomerSnapshot originalData,
+                                             CustomerSnapshot proposedData, UserId requesterId,
+                                             String requestReason) {
+<span class="fc" id="L73">        return new CustomerChangeRequest(</span>
+<span class="fc" id="L74">            CustomerChangeRequestId.generate(),</span>
+            customerId,
+            originalData,
+            proposedData,
+            requesterId,
+            requestReason
+        );
+    }
+    
+    /**
+     * 申請を承認
+     * 
+     * @param approverId 承認者ID
+     * @param comment 承認コメント
+     * @throws IllegalStateException 承認できない状態の場合
+     */
+    public void approve(UserId approverId, String comment) {
+<span class="fc" id="L91">        validateCanProcess();</span>
+<span class="fc" id="L92">        validateNotSelfApproval(approverId);</span>
+        
+<span class="fc" id="L94">        this.approval = Approval.approve(approverId, comment);</span>
+<span class="fc" id="L95">    }</span>
+    
+    /**
+     * 申請を却下
+     * 
+     * @param approverId 承認者ID
+     * @param reason 却下理由
+     * @throws IllegalStateException 却下できない状態の場合
+     */
+    public void reject(UserId approverId, String reason) {
+<span class="fc" id="L105">        validateCanProcess();</span>
+<span class="fc" id="L106">        validateNotSelfApproval(approverId);</span>
+        
+<span class="fc" id="L108">        this.approval = Approval.reject(approverId, reason);</span>
+<span class="fc" id="L109">    }</span>
+    
+    /**
+     * 申請内容を更新（承認待ち状態でのみ可能）
+     * 
+     * @param newProposedData 新しい変更後データ
+     * @param newRequestReason 新しい申請理由
+     * @throws IllegalStateException 更新できない状態の場合
+     */
+    public void updateProposedData(CustomerSnapshot newProposedData, String newRequestReason) {
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        if (!isPending()) {</span>
+<span class="fc" id="L120">            throw new IllegalStateException(&quot;承認待ち状態でのみ申請内容を更新できます&quot;);</span>
+        }
+        
+<span class="fc" id="L123">        this.proposedData = Objects.requireNonNull(newProposedData, &quot;変更後データは必須です&quot;);</span>
+<span class="fc" id="L124">        this.requestReason = validateRequestReason(newRequestReason);</span>
+<span class="fc" id="L125">        validateProposedData();</span>
+<span class="fc" id="L126">    }</span>
+    
+    /**
+     * 期限切れによる自動却下
+     * 
+     * @throws IllegalStateException 期限切れ処理できない状態の場合
+     */
+    public void expireByDeadline() {
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">        if (!isPending()) {</span>
+<span class="nc" id="L135">            throw new IllegalStateException(&quot;承認待ち状態でのみ期限切れ処理できます&quot;);</span>
+        }
+        
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">        if (!isExpired()) {</span>
+<span class="fc" id="L139">            throw new IllegalStateException(&quot;まだ期限切れではありません&quot;);</span>
+        }
+        
+<span class="nc" id="L142">        this.approval = Approval.expire();</span>
+<span class="nc" id="L143">    }</span>
+    
+    /**
+     * 期限切れかどうかを判定
+     * 
+     * @return 期限切れの場合true
+     */
+    public boolean isExpired() {
+<span class="fc" id="L151">        return LocalDateTime.now().isAfter(deadline);</span>
+    }
+    
+    /**
+     * 承認待ち状態かどうかを判定
+     * 
+     * @return 承認待ちの場合true
+     */
+    public boolean isPending() {
+<span class="fc" id="L160">        return approval.isPending();</span>
+    }
+    
+    /**
+     * 承認済み状態かどうかを判定
+     * 
+     * @return 承認済みの場合true
+     */
+    public boolean isApproved() {
+<span class="fc" id="L169">        return approval.isApproved();</span>
+    }
+    
+    /**
+     * 却下状態かどうかを判定
+     * 
+     * @return 却下の場合true
+     */
+    public boolean isRejected() {
+<span class="fc" id="L178">        return approval.isRejected();</span>
+    }
+    
+    /**
+     * 期限切れ状態かどうかを判定
+     * 
+     * @return 期限切れの場合true
+     */
+    public boolean isExpiredStatus() {
+<span class="fc" id="L187">        return approval.isExpired();</span>
+    }
+    
+    /**
+     * 申請理由の妥当性を検証
+     * 
+     * @param reason 申請理由
+     * @return 検証済み申請理由
+     */
+    private String validateRequestReason(String reason) {
+<span class="fc bfc" id="L197" title="All 4 branches covered.">        if (reason == null || reason.trim().isEmpty()) {</span>
+<span class="fc" id="L198">            throw new IllegalArgumentException(&quot;申請理由は必須です&quot;);</span>
+        }
+<span class="fc bfc" id="L200" title="All 2 branches covered.">        if (reason.length() &gt; 500) {</span>
+<span class="fc" id="L201">            throw new IllegalArgumentException(&quot;申請理由は500文字以内で入力してください&quot;);</span>
+        }
+<span class="fc" id="L203">        return reason.trim();</span>
+    }
+    
+    /**
+     * 変更後データの妥当性を検証
+     */
+    private void validateProposedData() {
+<span class="fc bfc" id="L210" title="All 2 branches covered.">        if (!originalData.getCustomerId().equals(proposedData.getCustomerId())) {</span>
+<span class="fc" id="L211">            throw new IllegalArgumentException(&quot;顧客IDは変更できません&quot;);</span>
+        }
+        
+<span class="fc bfc" id="L214" title="All 2 branches covered.">        if (originalData.equals(proposedData)) {</span>
+<span class="fc" id="L215">            throw new IllegalArgumentException(&quot;変更前後のデータが同じです&quot;);</span>
+        }
+<span class="fc" id="L217">    }</span>
+    
+    /**
+     * 処理可能状態かどうかを検証
+     */
+    private void validateCanProcess() {
+<span class="fc bfc" id="L223" title="All 2 branches covered.">        if (!isPending()) {</span>
+<span class="fc" id="L224">            throw new IllegalStateException(&quot;承認待ち状態でのみ処理できます&quot;);</span>
+        }
+        
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">        if (isExpired()) {</span>
+<span class="nc" id="L228">            throw new IllegalStateException(&quot;期限切れのため処理できません&quot;);</span>
+        }
+<span class="fc" id="L230">    }</span>
+    
+    /**
+     * 自己承認でないことを検証
+     * 
+     * @param approverId 承認者ID
+     */
+    private void validateNotSelfApproval(UserId approverId) {
+<span class="fc bfc" id="L238" title="All 2 branches covered.">        if (requesterId.equals(approverId)) {</span>
+<span class="fc" id="L239">            throw new IllegalArgumentException(&quot;申請者本人は承認・却下できません&quot;);</span>
+        }
+<span class="fc" id="L241">    }</span>
+    
+    /**
+     * 承認期限を計算（申請から1週間後）
+     * 
+     * @param requestedAt 申請日時
+     * @return 承認期限
+     */
+    private LocalDateTime calculateDeadline(LocalDateTime requestedAt) {
+<span class="fc" id="L250">        return requestedAt.plusWeeks(1);</span>
+    }
+    
+    // Getters
+<span class="fc" id="L254">    public CustomerId getCustomerId() { return customerId; }</span>
+<span class="fc" id="L255">    public CustomerSnapshot getOriginalData() { return originalData; }</span>
+<span class="fc" id="L256">    public CustomerSnapshot getProposedData() { return proposedData; }</span>
+<span class="fc" id="L257">    public UserId getRequesterId() { return requesterId; }</span>
+    
+    /**
+     * 承認状態を取得
+     * 
+     * @return 承認状態
+     */
+    public ApprovalStatus getStatus() { 
+<span class="fc" id="L265">        return approval.getStatus(); </span>
+    }
+    
+<span class="fc" id="L268">    public Approval getApproval() { return approval; }</span>
+<span class="fc" id="L269">    public LocalDateTime getRequestedAt() { return requestedAt; }</span>
+<span class="fc" id="L270">    public LocalDateTime getDeadline() { return deadline; }</span>
+<span class="fc" id="L271">    public String getRequestReason() { return requestReason; }</span>
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L275">        return &quot;CustomerChangeRequest{&quot; +</span>
+<span class="nc" id="L276">               &quot;id=&quot; + getId() +</span>
+               &quot;, customerId=&quot; + customerId +
+               &quot;, requesterId=&quot; + requesterId +
+<span class="nc" id="L279">               &quot;, status=&quot; + getStatus() +</span>
+               &quot;, requestedAt=&quot; + requestedAt +
+               &quot;, deadline=&quot; + deadline +
+               '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

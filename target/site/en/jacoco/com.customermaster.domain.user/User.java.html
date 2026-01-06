@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>User.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.user</a> &gt; <span class="el_source">User.java</span></div><h1>User.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.user;
+
+import com.customermaster.domain.shared.Entity;
+import com.customermaster.domain.salesdepartment.SalesDepartmentId;
+import com.customermaster.domain.customer.CustomerId;
+
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+/**
+ * ユーザー
+ * 
+ * システムを利用するユーザーを表現するエンティティ（集約ルート）
+ */
+public class User extends Entity&lt;UserId&gt; {
+    
+    private static final int MAX_FAILED_LOGIN_ATTEMPTS = 3;
+    private static final int LOCK_DURATION_MINUTES = 15;
+    
+    private UserName userName;
+    private Role role;
+    private SalesDepartmentId departmentId;
+    private UserStatus status;
+    private LocalDateTime lastLoginAt;
+    private int failedLoginAttempts;
+    private LocalDateTime lockedUntil;
+    
+    /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+    private User() {
+<span class="nc" id="L32">        super(null);</span>
+<span class="nc" id="L33">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
+    }
+    
+    /**
+     * コンストラクタ（新規ユーザー用）
+     * 
+     * @param userId ユーザーID
+     * @param userName ユーザー名
+     * @param role 役割
+     * @param departmentId 所属部門ID
+     */
+    private User(UserId userId, UserName userName, Role role, SalesDepartmentId departmentId) {
+<span class="fc" id="L45">        super(userId);</span>
+<span class="fc" id="L46">        this.userName = Objects.requireNonNull(userName, &quot;ユーザー名は必須です&quot;);</span>
+<span class="fc" id="L47">        this.role = Objects.requireNonNull(role, &quot;役割は必須です&quot;);</span>
+<span class="fc" id="L48">        this.departmentId = validateDepartmentAssignment(role, departmentId);</span>
+<span class="fc" id="L49">        this.status = UserStatus.ACTIVE;</span>
+<span class="fc" id="L50">        this.lastLoginAt = null;</span>
+<span class="fc" id="L51">        this.failedLoginAttempts = 0;</span>
+<span class="fc" id="L52">        this.lockedUntil = null;</span>
+<span class="fc" id="L53">    }</span>
+    
+    /**
+     * コンストラクタ（既存ユーザー復元用）
+     * 
+     * @param userId ユーザーID
+     * @param userName ユーザー名
+     * @param role 役割
+     * @param departmentId 所属部門ID
+     * @param status ユーザー状態
+     * @param lastLoginAt 最終ログイン日時
+     * @param failedLoginAttempts ログイン失敗回数
+     * @param lockedUntil ロック解除日時
+     * @param createdAt 作成日時
+     * @param updatedAt 更新日時
+     */
+    private User(UserId userId, UserName userName, Role role, SalesDepartmentId departmentId,
+                UserStatus status, LocalDateTime lastLoginAt, int failedLoginAttempts,
+                LocalDateTime lockedUntil, LocalDateTime createdAt, LocalDateTime updatedAt) {
+<span class="nc" id="L72">        super(userId, createdAt, updatedAt);</span>
+<span class="nc" id="L73">        this.userName = Objects.requireNonNull(userName, &quot;ユーザー名は必須です&quot;);</span>
+<span class="nc" id="L74">        this.role = Objects.requireNonNull(role, &quot;役割は必須です&quot;);</span>
+<span class="nc" id="L75">        this.departmentId = validateDepartmentAssignment(role, departmentId);</span>
+<span class="nc" id="L76">        this.status = Objects.requireNonNull(status, &quot;ユーザー状態は必須です&quot;);</span>
+<span class="nc" id="L77">        this.lastLoginAt = lastLoginAt;</span>
+<span class="nc" id="L78">        this.failedLoginAttempts = Math.max(0, failedLoginAttempts);</span>
+<span class="nc" id="L79">        this.lockedUntil = lockedUntil;</span>
+<span class="nc" id="L80">    }</span>
+    
+    /**
+     * 新規ユーザーを作成
+     * 
+     * @param userId ユーザーID
+     * @param userName ユーザー名
+     * @param role 役割
+     * @param departmentId 所属部門ID
+     * @return User
+     */
+    public static User create(UserId userId, UserName userName, Role role, SalesDepartmentId departmentId) {
+<span class="fc" id="L92">        return new User(userId, userName, role, departmentId);</span>
+    }
+    
+    /**
+     * 既存ユーザーを復元
+     * 
+     * @param userId ユーザーID
+     * @param userName ユーザー名
+     * @param role 役割
+     * @param departmentId 所属部門ID
+     * @param status ユーザー状態
+     * @param lastLoginAt 最終ログイン日時
+     * @param failedLoginAttempts ログイン失敗回数
+     * @param lockedUntil ロック解除日時
+     * @param createdAt 作成日時
+     * @param updatedAt 更新日時
+     * @return User
+     */
+    public static User restore(UserId userId, UserName userName, Role role, SalesDepartmentId departmentId,
+                              UserStatus status, LocalDateTime lastLoginAt, int failedLoginAttempts,
+                              LocalDateTime lockedUntil, LocalDateTime createdAt, LocalDateTime updatedAt) {
+<span class="nc" id="L113">        return new User(userId, userName, role, departmentId, status, lastLoginAt,</span>
+                       failedLoginAttempts, lockedUntil, createdAt, updatedAt);
+    }
+    
+    /**
+     * 部門割り当ての妥当性を検証
+     */
+    private SalesDepartmentId validateDepartmentAssignment(Role role, SalesDepartmentId departmentId) {
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        if (role.isSalesRepresentative()) {</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">            if (departmentId == null) {</span>
+<span class="fc" id="L123">                throw new IllegalArgumentException(&quot;営業担当者・部長は営業部への所属が必須です&quot;);</span>
+            }
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        } else if (role.isSystemAdministrator()) {</span>
+            // システム管理者は情報システム部所属（departmentIdはnullでも可）
+        }
+<span class="fc" id="L128">        return departmentId;</span>
+    }
+    
+    // ビジネスメソッド
+    
+    /**
+     * 顧客データ変更を承認できるかどうかを判定
+     * 
+     * 注意: 部門一致確認は呼び出し側またはドメインサービスで行う必要がある
+     * 
+     * @param customerId 顧客ID
+     * @return 基本的な承認権限を持つ場合true
+     */
+    public boolean canApproveCustomerChange(CustomerId customerId) {
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">        if (!canUseSystem()) {</span>
+<span class="nc" id="L143">            return false;</span>
+        }
+        
+        // システム管理者は全ての変更を承認可能
+<span class="fc bfc" id="L147" title="All 2 branches covered.">        if (role.isSystemAdministrator()) {</span>
+<span class="fc" id="L148">            return true;</span>
+        }
+        
+        // 部長は基本的な承認権限を持つ（部門一致確認は別途必要）
+<span class="fc" id="L152">        return role.isDepartmentManager();</span>
+    }
+    
+    /**
+     * 担当者変更を承認できるかどうかを判定
+     * 
+     * @return 承認可能な場合true
+     */
+    public boolean canApproveAssignmentChange() {
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">        if (!canUseSystem()) {</span>
+<span class="nc" id="L162">            return false;</span>
+        }
+        
+<span class="fc" id="L165">        return role.canApprove();</span>
+    }
+    
+    /**
+     * 顧客データを直接更新できるかどうかを判定
+     * 
+     * @param customerId 顧客ID
+     * @return 直接更新可能な場合true
+     */
+    public boolean canDirectlyUpdateCustomer(CustomerId customerId) {
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">        if (!canUseSystem()) {</span>
+<span class="nc" id="L176">            return false;</span>
+        }
+        
+        // システム管理者は直接更新可能
+<span class="fc" id="L180">        return role.isSystemAdministrator();</span>
+    }
+    
+    /**
+     * ログイン失敗を記録
+     */
+    public void recordLoginFailure() {
+<span class="fc" id="L187">        this.failedLoginAttempts++;</span>
+        
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        if (this.failedLoginAttempts &gt;= MAX_FAILED_LOGIN_ATTEMPTS) {</span>
+<span class="fc" id="L190">            this.status = UserStatus.LOCKED;</span>
+<span class="fc" id="L191">            this.lockedUntil = LocalDateTime.now().plusMinutes(LOCK_DURATION_MINUTES);</span>
+        }
+        
+<span class="fc" id="L194">        markAsUpdated();</span>
+<span class="fc" id="L195">    }</span>
+    
+    /**
+     * ログイン成功を記録
+     */
+    public void recordSuccessfulLogin() {
+<span class="fc" id="L201">        this.lastLoginAt = LocalDateTime.now();</span>
+<span class="fc" id="L202">        this.failedLoginAttempts = 0;</span>
+<span class="fc" id="L203">        this.lockedUntil = null;</span>
+        
+        // ロック状態の場合はアクティブに戻す
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        if (this.status == UserStatus.LOCKED) {</span>
+<span class="fc" id="L207">            this.status = UserStatus.ACTIVE;</span>
+        }
+        
+<span class="fc" id="L210">        markAsUpdated();</span>
+<span class="fc" id="L211">    }</span>
+    
+    /**
+     * アカウントがロックされているかどうかを判定
+     * 
+     * @return ロックされている場合true
+     */
+    public boolean isAccountLocked() {
+<span class="fc bfc" id="L219" title="All 2 branches covered.">        if (status != UserStatus.LOCKED) {</span>
+<span class="fc" id="L220">            return false;</span>
+        }
+        
+        // ロック期間が過ぎている場合は自動解除
+<span class="pc bpc" id="L224" title="2 of 4 branches missed.">        if (lockedUntil != null &amp;&amp; LocalDateTime.now().isAfter(lockedUntil)) {</span>
+<span class="nc" id="L225">            this.status = UserStatus.ACTIVE;</span>
+<span class="nc" id="L226">            this.lockedUntil = null;</span>
+<span class="nc" id="L227">            this.failedLoginAttempts = 0;</span>
+<span class="nc" id="L228">            markAsUpdated();</span>
+<span class="nc" id="L229">            return false;</span>
+        }
+        
+<span class="fc" id="L232">        return true;</span>
+    }
+    
+    /**
+     * システムを利用できるかどうかを判定
+     * 
+     * @return 利用可能な場合true
+     */
+    public boolean canUseSystem() {
+<span class="pc bpc" id="L241" title="1 of 4 branches missed.">        return status.canUseSystem() &amp;&amp; !isAccountLocked();</span>
+    }
+    
+    /**
+     * ユーザーを無効化
+     */
+    public void deactivate() {
+<span class="fc" id="L248">        this.status = UserStatus.INACTIVE;</span>
+<span class="fc" id="L249">        markAsUpdated();</span>
+<span class="fc" id="L250">    }</span>
+    
+    /**
+     * ユーザーを有効化
+     */
+    public void activate() {
+<span class="fc" id="L256">        this.status = UserStatus.ACTIVE;</span>
+<span class="fc" id="L257">        this.failedLoginAttempts = 0;</span>
+<span class="fc" id="L258">        this.lockedUntil = null;</span>
+<span class="fc" id="L259">        markAsUpdated();</span>
+<span class="fc" id="L260">    }</span>
+    
+    /**
+     * ユーザーを削除（論理削除）
+     */
+    public void delete() {
+<span class="fc" id="L266">        this.status = UserStatus.DELETED;</span>
+<span class="fc" id="L267">        markAsUpdated();</span>
+<span class="fc" id="L268">    }</span>
+    
+    /**
+     * 役割を変更
+     * 
+     * @param newRole 新しい役割
+     * @param newDepartmentId 新しい所属部門ID
+     */
+    public void changeRole(Role newRole, SalesDepartmentId newDepartmentId) {
+<span class="fc" id="L277">        this.role = Objects.requireNonNull(newRole, &quot;役割は必須です&quot;);</span>
+<span class="fc" id="L278">        this.departmentId = validateDepartmentAssignment(newRole, newDepartmentId);</span>
+<span class="fc" id="L279">        markAsUpdated();</span>
+<span class="fc" id="L280">    }</span>
+    
+    // Getters
+    
+<span class="nc" id="L284">    public UserName getUserName() { return userName; }</span>
+<span class="fc" id="L285">    public Role getRole() { return role; }</span>
+<span class="fc" id="L286">    public SalesDepartmentId getDepartmentId() { return departmentId; }</span>
+<span class="fc" id="L287">    public UserStatus getStatus() { return status; }</span>
+<span class="nc" id="L288">    public LocalDateTime getLastLoginAt() { return lastLoginAt; }</span>
+<span class="fc" id="L289">    public int getFailedLoginAttempts() { return failedLoginAttempts; }</span>
+<span class="nc" id="L290">    public LocalDateTime getLockedUntil() { return lockedUntil; }</span>
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L294">        return &quot;User{&quot; +</span>
+<span class="nc" id="L295">               &quot;id=&quot; + getId() +</span>
+               &quot;, userName=&quot; + userName +
+               &quot;, role=&quot; + role +
+               &quot;, departmentId=&quot; + departmentId +
+               &quot;, status=&quot; + status +
+               &quot;, lastLoginAt=&quot; + lastLoginAt +
+               &quot;, failedLoginAttempts=&quot; + failedLoginAttempts +
+               &quot;, lockedUntil=&quot; + lockedUntil +
+               '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

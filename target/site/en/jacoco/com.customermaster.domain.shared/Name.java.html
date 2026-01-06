@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Name.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.shared</a> &gt; <span class="el_source">Name.java</span></div><h1>Name.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.shared;
+
+import java.util.Objects;
+
+/**
+ * 名前の基底クラス
+ * 
+ * 名前に関する共通的なバリデーションと操作を提供
+ * 
+ * &lt;h3&gt;設計規約&lt;/h3&gt;
+ * &lt;p&gt;このクラスを継承するサブクラスは以下の規約に従ってください：&lt;/p&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;&lt;strong&gt;コンストラクタ&lt;/strong&gt;: 必ず{@code private}で宣言してください&lt;/li&gt;
+ *   &lt;li&gt;&lt;strong&gt;ファクトリメソッド&lt;/strong&gt;: {@code public static T of(String value)}メソッドを提供してください&lt;/li&gt;
+ *   &lt;li&gt;&lt;strong&gt;最大文字数&lt;/strong&gt;: {@link #getMaxLength()}メソッドをオーバーライドしてください&lt;/li&gt;
+ * &lt;/ul&gt;
+ * 
+ * &lt;h3&gt;実装例&lt;/h3&gt;
+ * &lt;pre&gt;{@code
+ * public class CustomerName extends Name {
+ *     private static final int MAX_LENGTH = 100;
+ *     
+ *     private CustomerName(String value) {  // privateコンストラクタ
+ *         super(value);
+ *     }
+ *     
+ *     public static CustomerName of(String value) {  // ファクトリメソッド
+ *         return new CustomerName(value);
+ *     }
+ *     
+ *     @Override
+ *     protected int getMaxLength() {
+ *         return MAX_LENGTH;
+ *     }
+ * }
+ * }&lt;/pre&gt;
+ */
+public abstract class Name extends ValueObject {
+    
+    private final String value;
+    
+    /**
+     * コンストラクタ
+     * 
+     * @param value 名前
+     * @throws IllegalArgumentException 名前がnull、空、または不正な場合
+     */
+<span class="fc" id="L48">    protected Name(String value) {</span>
+<span class="fc bfc" id="L49" title="All 4 branches covered.">        if (value == null || value.trim().isEmpty()) {</span>
+<span class="fc" id="L50">            throw new IllegalArgumentException(&quot;名前は必須です&quot;);</span>
+        }
+        
+<span class="fc" id="L53">        String trimmedValue = value.trim();</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (trimmedValue.length() &gt; getMaxLength()) {</span>
+<span class="fc" id="L55">            throw new IllegalArgumentException(</span>
+<span class="fc" id="L56">                String.format(&quot;名前は%d文字以内で入力してください&quot;, getMaxLength())</span>
+            );
+        }
+        
+<span class="fc" id="L60">        this.value = trimmedValue;</span>
+<span class="fc" id="L61">    }</span>
+    
+    /**
+     * 最大文字数を取得（サブクラスでオーバーライド）
+     * 
+     * @return 最大文字数
+     */
+    protected abstract int getMaxLength();
+    
+    /**
+     * 名前の値を取得
+     * 
+     * @return 名前
+     */
+    public String getValue() {
+<span class="fc" id="L76">        return value;</span>
+    }
+    
+    @Override
+    public boolean equals(Object other) {
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (this == other) return true;</span>
+<span class="pc bpc" id="L82" title="2 of 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
+<span class="fc" id="L83">        Name name = (Name) other;</span>
+<span class="fc" id="L84">        return Objects.equals(value, name.value);</span>
+    }
+    
+    @Override
+    public int hashCode() {
+<span class="fc" id="L89">        return Objects.hash(value);</span>
+    }
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L94">        return getClass().getSimpleName() + &quot;{value='&quot; + value + &quot;'}&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

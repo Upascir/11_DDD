@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomerSnapshot.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.customer</a> &gt; <span class="el_source">CustomerSnapshot.java</span></div><h1>CustomerSnapshot.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.customer;
+
+import com.customermaster.domain.shared.ValueObject;
+import com.customermaster.domain.shared.Address;
+import com.customermaster.domain.shared.ContactInfo;
+import com.customermaster.domain.shared.BankAccount;
+import com.customermaster.domain.assign.AssignedSalesRepresentative;
+import com.customermaster.domain.user.UserId;
+import com.customermaster.domain.salesdepartment.SalesDepartmentId;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * 顧客スナップショット
+ * 
+ * 変更申請時点での顧客情報を保存する不変オブジェクト
+ * 差分計算や変更履歴の管理に使用される
+ */
+public class CustomerSnapshot extends ValueObject {
+    
+    private final CustomerId customerId;
+    private final CustomerBasicInfo basicInfo;
+    private final Address headquartersAddress;
+    private final List&lt;Address&gt; branchAddresses;
+    private final ContactInfo representativeContact;
+    private final List&lt;ContactInfo&gt; contactPersons;
+    private final BankAccount mainBankAccount;
+    private final List&lt;BankAccount&gt; subBankAccounts;
+    private final AssignedSalesRepresentative assignedSalesRep;
+    private final CreditInfo creditInfo;
+    
+    /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+<span class="nc" id="L37">    private CustomerSnapshot() {</span>
+<span class="nc" id="L38">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
+    }
+    
+    /**
+     * コンストラクタ
+     * 
+     * @param customerId 顧客ID
+     * @param basicInfo 基本情報
+     * @param headquartersAddress 本社住所
+     * @param branchAddresses 支店住所リスト
+     * @param representativeContact 代表連絡先
+     * @param contactPersons 担当者連絡先リスト
+     * @param mainBankAccount メイン口座
+     * @param subBankAccounts サブ口座リスト
+     * @param assignedSalesRep 担当営業者
+     * @param creditInfo 信用情報
+     */
+    private CustomerSnapshot(CustomerId customerId, CustomerBasicInfo basicInfo,
+                           Address headquartersAddress, List&lt;Address&gt; branchAddresses,
+                           ContactInfo representativeContact, List&lt;ContactInfo&gt; contactPersons,
+                           BankAccount mainBankAccount, List&lt;BankAccount&gt; subBankAccounts,
+<span class="fc" id="L59">                           AssignedSalesRepresentative assignedSalesRep, CreditInfo creditInfo) {</span>
+<span class="fc" id="L60">        this.customerId = Objects.requireNonNull(customerId, &quot;顧客IDは必須です&quot;);</span>
+<span class="fc" id="L61">        this.basicInfo = Objects.requireNonNull(basicInfo, &quot;基本情報は必須です&quot;);</span>
+<span class="fc" id="L62">        this.headquartersAddress = Objects.requireNonNull(headquartersAddress, &quot;本社住所は必須です&quot;);</span>
+<span class="fc" id="L63">        this.branchAddresses = List.copyOf(Objects.requireNonNull(branchAddresses, &quot;支店住所リストは必須です&quot;));</span>
+<span class="fc" id="L64">        this.representativeContact = Objects.requireNonNull(representativeContact, &quot;代表連絡先は必須です&quot;);</span>
+<span class="fc" id="L65">        this.contactPersons = List.copyOf(Objects.requireNonNull(contactPersons, &quot;担当者連絡先リストは必須です&quot;));</span>
+<span class="fc" id="L66">        this.mainBankAccount = Objects.requireNonNull(mainBankAccount, &quot;メイン口座は必須です&quot;);</span>
+<span class="fc" id="L67">        this.subBankAccounts = List.copyOf(Objects.requireNonNull(subBankAccounts, &quot;サブ口座リストは必須です&quot;));</span>
+<span class="fc" id="L68">        this.assignedSalesRep = Objects.requireNonNull(assignedSalesRep, &quot;担当営業者は必須です&quot;);</span>
+<span class="fc" id="L69">        this.creditInfo = Objects.requireNonNull(creditInfo, &quot;信用情報は必須です&quot;);</span>
+<span class="fc" id="L70">    }</span>
+    
+    /**
+     * 顧客からスナップショットを作成
+     * 
+     * @param customer 顧客
+     * @return CustomerSnapshot
+     */
+    public static CustomerSnapshot from(Customer customer) {
+<span class="nc" id="L79">        return new CustomerSnapshot(</span>
+<span class="nc" id="L80">            customer.getId(),  // getCustomerId() -&gt; getId()に修正</span>
+<span class="nc" id="L81">            customer.getBasicInfo(),</span>
+<span class="nc" id="L82">            customer.getHeadquartersAddress(),</span>
+<span class="nc" id="L83">            customer.getBranchAddresses(),</span>
+<span class="nc" id="L84">            customer.getRepresentativeContact(),</span>
+<span class="nc" id="L85">            customer.getContactPersons(),</span>
+<span class="nc" id="L86">            customer.getMainBankAccount(),</span>
+<span class="nc" id="L87">            customer.getSubBankAccounts(),</span>
+<span class="nc" id="L88">            customer.getAssignedSalesRep(),</span>
+<span class="nc" id="L89">            customer.getCreditInfo()</span>
+        );
+    }
+    
+    /**
+     * テスト用の簡単なスナップショットを作成
+     * 
+     * @param customerId 顧客ID
+     * @param customerName 顧客名
+     * @param address 住所
+     * @param contactInfo 連絡先
+     * @return CustomerSnapshot
+     */
+    public static CustomerSnapshot of(CustomerId customerId, CustomerName customerName, 
+                                    Address address, ContactInfo contactInfo) {
+<span class="fc" id="L104">        CustomerBasicInfo basicInfo = CustomerBasicInfo.of(</span>
+            customerName, 
+            &quot;テストカナ&quot;, 
+            &quot;製造業&quot;
+        );
+        
+<span class="fc" id="L110">        BankAccount defaultBank = BankAccount.of(</span>
+            &quot;0001&quot;, &quot;テスト銀行&quot;, &quot;001&quot;, &quot;テスト支店&quot;, 
+            BankAccount.AccountType.ORDINARY, &quot;1234567&quot;, &quot;テスト&quot;
+        );
+<span class="fc" id="L114">        AssignedSalesRepresentative defaultSalesRep = AssignedSalesRepresentative.of(</span>
+<span class="fc" id="L115">            UserId.generate(), </span>
+<span class="fc" id="L116">            SalesDepartmentId.generate(),</span>
+<span class="fc" id="L117">            LocalDateTime.now()</span>
+        );
+<span class="fc" id="L119">        CreditInfo defaultCredit = CreditInfo.createMinimal(CreditInfo.CreditRank.A);</span>
+        
+<span class="fc" id="L121">        return new CustomerSnapshot(</span>
+            customerId,
+            basicInfo,
+            address,
+<span class="fc" id="L125">            List.of(),  // 支店住所なし</span>
+            contactInfo,
+<span class="fc" id="L127">            List.of(),  // 担当者連絡先なし</span>
+            defaultBank,
+<span class="fc" id="L129">            List.of(),  // サブ口座なし</span>
+            defaultSalesRep,
+            defaultCredit
+        );
+    }
+    
+    // Getters
+<span class="fc" id="L136">    public CustomerId getCustomerId() { return customerId; }</span>
+<span class="nc" id="L137">    public CustomerBasicInfo getBasicInfo() { return basicInfo; }</span>
+<span class="nc" id="L138">    public Address getHeadquartersAddress() { return headquartersAddress; }</span>
+<span class="nc" id="L139">    public List&lt;Address&gt; getBranchAddresses() { return branchAddresses; }</span>
+<span class="nc" id="L140">    public ContactInfo getRepresentativeContact() { return representativeContact; }</span>
+<span class="nc" id="L141">    public List&lt;ContactInfo&gt; getContactPersons() { return contactPersons; }</span>
+<span class="nc" id="L142">    public BankAccount getMainBankAccount() { return mainBankAccount; }</span>
+<span class="nc" id="L143">    public List&lt;BankAccount&gt; getSubBankAccounts() { return subBankAccounts; }</span>
+<span class="nc" id="L144">    public AssignedSalesRepresentative getAssignedSalesRep() { return assignedSalesRep; }</span>
+<span class="nc" id="L145">    public CreditInfo getCreditInfo() { return creditInfo; }</span>
+    
+    @Override
+    public boolean equals(Object other) {
+<span class="fc bfc" id="L149" title="All 2 branches covered.">        if (this == other) return true;</span>
+<span class="pc bpc" id="L150" title="2 of 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
+<span class="fc" id="L151">        CustomerSnapshot that = (CustomerSnapshot) other;</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        return Objects.equals(customerId, that.customerId) &amp;&amp;</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">               Objects.equals(basicInfo, that.basicInfo) &amp;&amp;</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">               Objects.equals(headquartersAddress, that.headquartersAddress) &amp;&amp;</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">               Objects.equals(branchAddresses, that.branchAddresses) &amp;&amp;</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">               Objects.equals(representativeContact, that.representativeContact) &amp;&amp;</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">               Objects.equals(contactPersons, that.contactPersons) &amp;&amp;</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">               Objects.equals(mainBankAccount, that.mainBankAccount) &amp;&amp;</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">               Objects.equals(subBankAccounts, that.subBankAccounts) &amp;&amp;</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">               Objects.equals(assignedSalesRep, that.assignedSalesRep) &amp;&amp;</span>
+<span class="pc bnc" id="L161" title="All 2 branches missed.">               Objects.equals(creditInfo, that.creditInfo);</span>
+    }
+    
+    @Override
+    public int hashCode() {
+<span class="nc" id="L166">        return Objects.hash(customerId, basicInfo, headquartersAddress, branchAddresses,</span>
+                          representativeContact, contactPersons, mainBankAccount, subBankAccounts,
+                          assignedSalesRep, creditInfo);
+    }
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L173">        return &quot;CustomerSnapshot{&quot; +</span>
+               &quot;customerId=&quot; + customerId +
+               &quot;, basicInfo=&quot; + basicInfo +
+               &quot;, assignedSalesRep=&quot; + assignedSalesRep +
+               '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
