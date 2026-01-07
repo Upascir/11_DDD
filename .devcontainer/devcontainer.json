@@ -1,5 +1,5 @@
 {
-  "name": "Customer Master System",
+  "name": "DDD sample project",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspace",

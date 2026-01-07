@@ -5,13 +5,13 @@
          http://maven.apache.org/xsd/decoration-1.8.0.xsd">
 
     <bannerLeft>
-        <name>法人マスタ管理システム</name>
+        <name>MDMシステム</name>
         <src>images/logo.png</src>
         <href>index.html</href>
     </bannerLeft>
 
     <bannerRight>
-        <name>Customer Master System</name>
+        <name>DDD sample project</name>
     </bannerRight>
 
     <publishDate position="right"/>
@@ -28,11 +28,6 @@
             <topBarEnabled>true</topBarEnabled>
             <sideBarEnabled>true</sideBarEnabled>
             <searchEnabled>true</searchEnabled>
-            <gitHub>
-                <projectId>customer-master-system</projectId>
-                <ribbonOrientation>right</ribbonOrientation>
-                <ribbonColor>darkblue</ribbonColor>
-            </gitHub>
         </fluidoSkin>
     </custom>
 
@@ -61,7 +56,7 @@
         </menu>
 
         <footer>
-            © 2026 Customer Master System. All rights reserved.
+            © 2026 DDD sample project. All rights reserved.
             Built with Maven and Spring Boot.
         </footer>
     </body>

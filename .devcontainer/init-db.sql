@@ -1,4 +1,4 @@
--- 法人マスタ管理システム用データベース初期化スクリプト
+-- MDMシステム用データベース初期化スクリプト
 
 -- データベースが存在しない場合は作成（Docker Composeで既に作成されているため、通常は不要）
 -- CREATE DATABASE IF NOT EXISTS customer_master;
@@ -31,4 +31,4 @@
 -- ('0017', '三菱UFJ銀行', 'ミツビシユーエフジェイギンコウ');
 
 -- 開発環境用のログ出力設定
-\echo 'Database initialization completed for Customer Master System'
+\echo 'Database initialization completed for DDD sample project'

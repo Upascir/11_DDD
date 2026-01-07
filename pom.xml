@@ -12,7 +12,7 @@
     <artifactId>customer-master-system</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>customer-master-system</name>
-    <description>法人マスタ管理システム</description>
+    <description>MDMシステム</description>
     <properties>
         <java.version>17</java.version>
         <!-- Test Report Plugins Versions -->
@@ -96,6 +96,15 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
+                <configuration>
+                    <outputDirectory>docs/jacoco</outputDirectory>
+                    <!-- Exclude generated classes and configuration -->
+                    <excludes>
+                        <exclude>**/Application.class</exclude>
+                        <exclude>**/config/**</exclude>
+                        <exclude>**/*Config.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <!-- Prepare JaCoCo agent for test execution -->
                     <execution>
@@ -111,6 +120,9 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <outputDirectory>docs/jacoco</outputDirectory>
+                        </configuration>
                     </execution>
                     <!-- Check coverage thresholds -->
                     <execution>
@@ -153,14 +165,6 @@
                         </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <!-- Exclude generated classes and configuration -->
-                    <excludes>
-                        <exclude>**/Application.class</exclude>
-                        <exclude>**/config/**</exclude>
-                        <exclude>**/*Config.class</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
 
             <!-- Surefire Plugin for Test Execution and Reporting -->
@@ -238,6 +242,9 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
+                <configuration>
+                    <outputDirectory>docs/jacoco</outputDirectory>
+                </configuration>
                 <reportSets>
                     <reportSet>
                         <reports>
