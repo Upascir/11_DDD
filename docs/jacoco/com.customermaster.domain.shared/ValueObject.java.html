@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValueObject.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.shared</a> &gt; <span class="el_source">ValueObject.java</span></div><h1>ValueObject.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.shared;
+
+/**
+ * 値オブジェクトの基底クラス
+ * 
+ * 値オブジェクトの基本的な性質を定義：
+ * - 不変性（Immutable）
+ * - 等価性（Equality）
+ * - 副作用なし（Side-effect free）
+ */
+<span class="fc" id="L11">public abstract class ValueObject {</span>
+    
+    /**
+     * 値オブジェクトの等価性を判定
+     * 
+     * @param other 比較対象
+     * @return 等価の場合true
+     */
+    @Override
+    public abstract boolean equals(Object other);
+    
+    /**
+     * ハッシュコードを取得
+     * 
+     * @return ハッシュコード
+     */
+    @Override
+    public abstract int hashCode();
+    
+    /**
+     * 文字列表現を取得
+     * 
+     * @return 文字列表現
+     */
+    @Override
+    public abstract String toString();
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

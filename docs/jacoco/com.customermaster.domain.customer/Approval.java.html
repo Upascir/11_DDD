@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Approval.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.customer</a> &gt; <span class="el_source">Approval.java</span></div><h1>Approval.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.customer;
+
+import com.customermaster.domain.shared.ValueObject;
+import com.customermaster.domain.user.UserId;
+
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+/**
+ * 承認情報
+ * 
+ * 変更申請に対する承認または却下の情報を管理する値オブジェクト
+ */
+public class Approval extends ValueObject {
+    
+    private final UserId approverId;
+    private final ApprovalStatus status;
+    private final String comment;
+    private final LocalDateTime processedAt;
+    
+    /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+<span class="nc" id="L24">    private Approval() {</span>
+<span class="nc" id="L25">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
+    }
+    
+    /**
+     * コンストラクタ
+     * 
+     * @param approverId 承認者ID（PENDING状態ではnull可）
+     * @param status 承認状態
+     * @param comment コメント（承認時は承認コメント、却下時は却下理由、PENDING時はnull可）
+     * @param processedAt 処理日時（PENDING状態ではnull可）
+     */
+<span class="fc" id="L36">    private Approval(UserId approverId, ApprovalStatus status, String comment, LocalDateTime processedAt) {</span>
+        // PENDING状態以外では承認者IDと処理日時は必須
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (status != ApprovalStatus.PENDING) {</span>
+<span class="fc" id="L39">            this.approverId = Objects.requireNonNull(approverId, &quot;承認者IDは必須です&quot;);</span>
+<span class="fc" id="L40">            this.processedAt = Objects.requireNonNull(processedAt, &quot;処理日時は必須です&quot;);</span>
+        } else {
+<span class="fc" id="L42">            this.approverId = approverId;  // PENDING時はnull可</span>
+<span class="fc" id="L43">            this.processedAt = processedAt;  // PENDING時はnull可</span>
+        }
+<span class="fc" id="L45">        this.status = Objects.requireNonNull(status, &quot;承認状態は必須です&quot;);</span>
+<span class="fc" id="L46">        this.comment = validateComment(comment, status);</span>
+<span class="fc" id="L47">    }</span>
+    
+    /**
+     * 承認情報を作成
+     * 
+     * @param approverId 承認者ID
+     * @param comment 承認コメント
+     * @return Approval
+     */
+    public static Approval approve(UserId approverId, String comment) {
+<span class="fc" id="L57">        return new Approval(approverId, ApprovalStatus.APPROVED, comment, LocalDateTime.now());</span>
+    }
+    
+    /**
+     * 却下情報を作成
+     * 
+     * @param approverId 承認者ID
+     * @param reason 却下理由
+     * @return Approval
+     */
+    public static Approval reject(UserId approverId, String reason) {
+<span class="fc" id="L68">        return new Approval(approverId, ApprovalStatus.REJECTED, reason, LocalDateTime.now());</span>
+    }
+    
+    /**
+     * 期限切れ情報を作成
+     * 
+     * @return Approval
+     */
+    public static Approval expire() {
+<span class="nc" id="L77">        return new Approval(</span>
+<span class="nc" id="L78">            UserId.of(&quot;SYSTEM&quot;), </span>
+            ApprovalStatus.EXPIRED, 
+            &quot;承認期限を過ぎたため自動的に却下されました&quot;, 
+<span class="nc" id="L81">            LocalDateTime.now()</span>
+        );
+    }
+    
+    /**
+     * 承認待ち情報を作成
+     * 
+     * @return Approval
+     */
+    public static Approval createPending() {
+<span class="fc" id="L91">        return new Approval(</span>
+            null,  // 承認待ち状態では承認者はまだ決まっていない
+            ApprovalStatus.PENDING, 
+            null,  // 承認待ち状態ではコメントはない
+            null   // 承認待ち状態では処理日時はない
+        );
+    }
+    
+    /**
+     * コメントの妥当性を検証
+     * 
+     * @param comment コメント
+     * @param status 承認状態
+     * @return 検証済みコメント
+     */
+    private String validateComment(String comment, ApprovalStatus status) {
+<span class="fc bfc" id="L107" title="All 4 branches covered.">        if (status == ApprovalStatus.APPROVED || status == ApprovalStatus.REJECTED) {</span>
+<span class="fc bfc" id="L108" title="All 4 branches covered.">            if (comment == null || comment.trim().isEmpty()) {</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">                String action = status == ApprovalStatus.APPROVED ? &quot;承認&quot; : &quot;却下&quot;;</span>
+<span class="fc" id="L110">                throw new IllegalArgumentException(action + &quot;時はコメントが必須です&quot;);</span>
+            }
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">            if (comment.length() &gt; 500) {</span>
+<span class="nc" id="L113">                throw new IllegalArgumentException(&quot;コメントは500文字以内で入力してください&quot;);</span>
+            }
+        }
+        // PENDING状態とEXPIRED状態ではコメントは任意
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        return comment != null ? comment.trim() : null;</span>
+    }
+    
+    // Getters
+<span class="fc" id="L121">    public UserId getApproverId() { return approverId; }</span>
+<span class="fc" id="L122">    public ApprovalStatus getStatus() { return status; }</span>
+<span class="fc" id="L123">    public String getComment() { return comment; }</span>
+<span class="fc" id="L124">    public LocalDateTime getProcessedAt() { return processedAt; }</span>
+    
+    /**
+     * 承認かどうかを判定
+     * 
+     * @return 承認の場合true
+     */
+    public boolean isApproved() {
+<span class="fc" id="L132">        return status.isApproved();</span>
+    }
+    
+    /**
+     * 却下かどうかを判定
+     * 
+     * @return 却下の場合true
+     */
+    public boolean isRejected() {
+<span class="fc" id="L141">        return status.isRejected();</span>
+    }
+    
+    /**
+     * 期限切れかどうかを判定
+     * 
+     * @return 期限切れの場合true
+     */
+    public boolean isExpired() {
+<span class="fc" id="L150">        return status.isExpired();</span>
+    }
+    
+    /**
+     * 承認待ちかどうかを判定
+     * 
+     * @return 承認待ちの場合true
+     */
+    public boolean isPending() {
+<span class="fc" id="L159">        return status.isPending();</span>
+    }
+    
+    @Override
+    public boolean equals(Object other) {
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        if (this == other) return true;</span>
+<span class="nc bnc" id="L165" title="All 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
+<span class="nc" id="L166">        Approval approval = (Approval) other;</span>
+<span class="nc bnc" id="L167" title="All 4 branches missed.">        return Objects.equals(approverId, approval.approverId) &amp;&amp;</span>
+               status == approval.status &amp;&amp;
+<span class="nc bnc" id="L169" title="All 2 branches missed.">               Objects.equals(comment, approval.comment) &amp;&amp;</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">               Objects.equals(processedAt, approval.processedAt);</span>
+    }
+    
+    @Override
+    public int hashCode() {
+<span class="nc" id="L175">        return Objects.hash(approverId, status, comment, processedAt);</span>
+    }
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L180">        return &quot;Approval{&quot; +</span>
+               &quot;approverId=&quot; + approverId +
+               &quot;, status=&quot; + status +
+               &quot;, comment='&quot; + comment + '\'' +
+               &quot;, processedAt=&quot; + processedAt +
+               '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

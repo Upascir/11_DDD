@@ -30,11 +30,11 @@ echo レポート生成完了！
 echo ========================================
 echo.
 echo 生成されたレポート:
-echo - テスト結果: target\site\surefire-report.html
-echo - カバレッジ: target\site\jacoco\index.html
-echo - 統合サイト: target\site\index.html
+echo - テスト結果: docs\surefire-report.html
+echo - カバレッジ: docs\jacoco\index.html
+echo - 統合サイト: docs\index.html
 echo.
 echo ブラウザでレポートを開く場合:
-echo start target\site\index.html
+echo start docs\index.html
 echo.
 pause

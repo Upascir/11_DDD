@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BankAccount.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.shared</a> &gt; <span class="el_source">BankAccount.java</span></div><h1>BankAccount.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.shared;
+
+import java.util.Objects;
+
+/**
+ * 銀行口座情報
+ * 
+ * 銀行口座の詳細情報を管理する値オブジェクト
+ */
+public class BankAccount extends ValueObject {
+    
+    private final String bankCode;
+    private final String bankName;
+    private final String branchCode;
+    private final String branchName;
+    private final AccountType accountType;
+    private final String accountNumber;
+    private final String accountHolderName;
+    
+    /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+<span class="nc" id="L23">    private BankAccount() {</span>
+<span class="nc" id="L24">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
+    }
+    
+    /**
+     * 口座種別
+     */
+<span class="fc" id="L30">    public enum AccountType {</span>
+<span class="fc" id="L31">        ORDINARY(&quot;普通&quot;),</span>
+<span class="fc" id="L32">        CURRENT(&quot;当座&quot;),</span>
+<span class="fc" id="L33">        SAVINGS(&quot;貯蓄&quot;);</span>
+        
+        private final String displayName;
+        
+<span class="fc" id="L37">        AccountType(String displayName) {</span>
+<span class="fc" id="L38">            this.displayName = displayName;</span>
+<span class="fc" id="L39">        }</span>
+        
+        public String getDisplayName() {
+<span class="fc" id="L42">            return displayName;</span>
+        }
+    }
+    
+    /**
+     * コンストラクタ
+     * 
+     * @param bankCode 銀行コード
+     * @param bankName 銀行名
+     * @param branchCode 支店コード
+     * @param branchName 支店名
+     * @param accountType 口座種別
+     * @param accountNumber 口座番号
+     * @param accountHolderName 口座名義人
+     */
+    private BankAccount(String bankCode, String bankName, String branchCode, 
+                       String branchName, AccountType accountType, 
+<span class="fc" id="L59">                       String accountNumber, String accountHolderName) {</span>
+<span class="fc" id="L60">        this.bankCode = validateBankCode(bankCode);</span>
+<span class="fc" id="L61">        this.bankName = validateRequired(bankName, &quot;銀行名&quot;);</span>
+<span class="fc" id="L62">        this.branchCode = validateBranchCode(branchCode);</span>
+<span class="fc" id="L63">        this.branchName = validateRequired(branchName, &quot;支店名&quot;);</span>
+<span class="fc" id="L64">        this.accountType = validateRequired(accountType, &quot;口座種別&quot;);</span>
+<span class="fc" id="L65">        this.accountNumber = validateAccountNumber(accountNumber);</span>
+<span class="fc" id="L66">        this.accountHolderName = validateRequired(accountHolderName, &quot;口座名義人&quot;);</span>
+<span class="fc" id="L67">    }</span>
+    
+    /**
+     * 銀行コードのバリデーション
+     */
+    private String validateBankCode(String bankCode) {
+<span class="pc bpc" id="L73" title="2 of 4 branches missed.">        if (bankCode == null || bankCode.trim().isEmpty()) {</span>
+<span class="nc" id="L74">            throw new IllegalArgumentException(&quot;銀行コードは必須です&quot;);</span>
+        }
+        
+<span class="fc" id="L77">        String trimmed = bankCode.trim();</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        if (!trimmed.matches(&quot;\\d{4}&quot;)) {</span>
+<span class="fc" id="L79">            throw new IllegalArgumentException(&quot;銀行コードは4桁の数字で入力してください&quot;);</span>
+        }
+        
+<span class="fc" id="L82">        return trimmed;</span>
+    }
+    
+    /**
+     * 支店コードのバリデーション
+     */
+    private String validateBranchCode(String branchCode) {
+<span class="pc bpc" id="L89" title="2 of 4 branches missed.">        if (branchCode == null || branchCode.trim().isEmpty()) {</span>
+<span class="nc" id="L90">            throw new IllegalArgumentException(&quot;支店コードは必須です&quot;);</span>
+        }
+        
+<span class="fc" id="L93">        String trimmed = branchCode.trim();</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (!trimmed.matches(&quot;\\d{3}&quot;)) {</span>
+<span class="fc" id="L95">            throw new IllegalArgumentException(&quot;支店コードは3桁の数字で入力してください&quot;);</span>
+        }
+        
+<span class="fc" id="L98">        return trimmed;</span>
+    }
+    
+    /**
+     * 口座番号のバリデーション
+     */
+    private String validateAccountNumber(String accountNumber) {
+<span class="pc bpc" id="L105" title="2 of 4 branches missed.">        if (accountNumber == null || accountNumber.trim().isEmpty()) {</span>
+<span class="nc" id="L106">            throw new IllegalArgumentException(&quot;口座番号は必須です&quot;);</span>
+        }
+        
+<span class="fc" id="L109">        String trimmed = accountNumber.trim();</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (!trimmed.matches(&quot;\\d{7}&quot;)) {</span>
+<span class="fc" id="L111">            throw new IllegalArgumentException(&quot;口座番号は7桁の数字で入力してください&quot;);</span>
+        }
+        
+<span class="fc" id="L114">        return trimmed;</span>
+    }
+    
+    /**
+     * 必須項目のバリデーション
+     */
+    private String validateRequired(String value, String fieldName) {
+<span class="fc bfc" id="L121" title="All 4 branches covered.">        if (value == null || value.trim().isEmpty()) {</span>
+<span class="fc" id="L122">            throw new IllegalArgumentException(fieldName + &quot;は必須です&quot;);</span>
+        }
+<span class="fc" id="L124">        return value.trim();</span>
+    }
+    
+    /**
+     * 必須項目のバリデーション（非文字列）
+     */
+    private &lt;T&gt; T validateRequired(T value, String fieldName) {
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L132">            throw new IllegalArgumentException(fieldName + &quot;は必須です&quot;);</span>
+        }
+<span class="fc" id="L134">        return value;</span>
+    }
+    
+    /**
+     * 銀行口座情報を作成
+     * 
+     * @param bankCode 銀行コード
+     * @param bankName 銀行名
+     * @param branchCode 支店コード
+     * @param branchName 支店名
+     * @param accountType 口座種別
+     * @param accountNumber 口座番号
+     * @param accountHolderName 口座名義人
+     * @return BankAccount
+     */
+    public static BankAccount of(String bankCode, String bankName, String branchCode, 
+                                String branchName, AccountType accountType, 
+                                String accountNumber, String accountHolderName) {
+<span class="fc" id="L152">        return new BankAccount(bankCode, bankName, branchCode, branchName, </span>
+                              accountType, accountNumber, accountHolderName);
+    }
+    
+    // Getters
+<span class="fc" id="L157">    public String getBankCode() { return bankCode; }</span>
+<span class="fc" id="L158">    public String getBankName() { return bankName; }</span>
+<span class="fc" id="L159">    public String getBranchCode() { return branchCode; }</span>
+<span class="fc" id="L160">    public String getBranchName() { return branchName; }</span>
+<span class="fc" id="L161">    public AccountType getAccountType() { return accountType; }</span>
+<span class="fc" id="L162">    public String getAccountNumber() { return accountNumber; }</span>
+<span class="fc" id="L163">    public String getAccountHolderName() { return accountHolderName; }</span>
+    
+    /**
+     * 口座情報の表示用文字列を取得
+     */
+    public String getDisplayString() {
+<span class="fc" id="L169">        return String.format(&quot;%s %s支店 %s %s (%s)&quot;,</span>
+<span class="fc" id="L170">                bankName, branchName, accountType.getDisplayName(), </span>
+                accountNumber, accountHolderName);
+    }
+    
+    @Override
+    public boolean equals(Object other) {
+<span class="fc bfc" id="L176" title="All 2 branches covered.">        if (this == other) return true;</span>
+<span class="pc bpc" id="L177" title="2 of 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
+<span class="fc" id="L178">        BankAccount that = (BankAccount) other;</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">        return Objects.equals(bankCode, that.bankCode) &amp;&amp;</span>
+<span class="fc bfc" id="L180" title="All 4 branches covered.">               Objects.equals(branchCode, that.branchCode) &amp;&amp;</span>
+               accountType == that.accountType &amp;&amp;
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">               Objects.equals(accountNumber, that.accountNumber);</span>
+    }
+    
+    @Override
+    public int hashCode() {
+<span class="fc" id="L187">        return Objects.hash(bankCode, branchCode, accountType, accountNumber);</span>
+    }
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L192">        return &quot;BankAccount{&quot; +</span>
+               &quot;bankCode='&quot; + bankCode + '\'' +
+               &quot;, bankName='&quot; + bankName + '\'' +
+               &quot;, branchCode='&quot; + branchCode + '\'' +
+               &quot;, branchName='&quot; + branchName + '\'' +
+               &quot;, accountType=&quot; + accountType +
+               &quot;, accountNumber='&quot; + accountNumber + '\'' +
+               &quot;, accountHolderName='&quot; + accountHolderName + '\'' +
+               '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

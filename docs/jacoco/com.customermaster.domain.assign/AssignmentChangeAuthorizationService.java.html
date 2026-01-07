@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AssignmentChangeAuthorizationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.assign</a> &gt; <span class="el_source">AssignmentChangeAuthorizationService.java</span></div><h1>AssignmentChangeAuthorizationService.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.assign;
+
+import com.customermaster.domain.customer.Customer;
+import com.customermaster.domain.user.UserId;
+import com.customermaster.domain.user.Role;
+import com.customermaster.domain.salesdepartment.SalesDepartmentId;
+
+import java.util.Objects;
+
+/**
+ * 担当者変更認可サービス
+ * 
+ * 担当者変更に関する権限チェックを行うドメインサービス
+ * 担当者割り当てドメインの中核的なビジネスルールを管理
+ */
+<span class="fc" id="L16">public class AssignmentChangeAuthorizationService {</span>
+    
+    /**
+     * 担当者変更申請の権限を検証
+     * 
+     * @param requesterId 申請者ID
+     * @param requesterRole 申請者の役割
+     * @param requesterDepartmentId 申請者の営業部ID
+     * @param customer 対象顧客
+     * @param changeRequest 変更申請
+     * @throws IllegalArgumentException 権限がない場合
+     */
+    public void validateAssignmentChangeRequest(UserId requesterId, Role requesterRole,
+                                              SalesDepartmentId requesterDepartmentId,
+                                              Customer customer,
+                                              AssignmentChangeRequest changeRequest) {
+<span class="fc" id="L32">        Objects.requireNonNull(requesterId, &quot;申請者IDは必須です&quot;);</span>
+<span class="fc" id="L33">        Objects.requireNonNull(requesterRole, &quot;申請者の役割は必須です&quot;);</span>
+<span class="fc" id="L34">        Objects.requireNonNull(customer, &quot;対象顧客は必須です&quot;);</span>
+<span class="fc" id="L35">        Objects.requireNonNull(changeRequest, &quot;変更申請は必須です&quot;);</span>
+        
+        // システム管理者は常に申請可能
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (requesterRole.isSystemAdministrator()) {</span>
+<span class="fc" id="L39">            return; // 検証成功</span>
+        }
+        
+        // 営業担当者または部長のみ申請可能
+<span class="pc bpc" id="L43" title="3 of 4 branches missed.">        if (!requesterRole.isSalesRepresentative() &amp;&amp; !requesterRole.isDepartmentManager()) {</span>
+<span class="nc" id="L44">            throw new IllegalArgumentException(&quot;営業担当者または部長のみが担当者変更を申請できます&quot;);</span>
+        }
+        
+        // 要件10.2: 営業担当者は自分が担当する顧客の担当者変更を申請できる
+<span class="pc bpc" id="L48" title="1 of 4 branches missed.">        if (requesterRole.isSalesRepresentative() &amp;&amp; !requesterRole.isDepartmentManager()) {</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">            if (!customer.isAssignedTo(requesterId)) {</span>
+<span class="fc" id="L50">                throw new IllegalArgumentException(&quot;自分が担当する顧客の担当者変更のみ申請できます&quot;);</span>
+            }
+        }
+        
+        // 部長は同じ営業部の顧客の担当者変更を申請できる
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        if (requesterRole.isDepartmentManager()) {</span>
+<span class="pc bpc" id="L56" title="1 of 4 branches missed.">            if (requesterDepartmentId != null &amp;&amp; !customer.belongsToDepartment(requesterDepartmentId)) {</span>
+<span class="fc" id="L57">                throw new IllegalArgumentException(&quot;同じ営業部の顧客の担当者変更のみ申請できます&quot;);</span>
+            }
+        }
+        
+        // 承認待ち状態の顧客は編集不可（要件3.16）
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">        if (customer.isPendingApproval()) {</span>
+<span class="nc" id="L63">            throw new IllegalArgumentException(&quot;承認待ちの顧客は担当者変更できません&quot;);</span>
+        }
+        
+        // 検証成功（例外がスローされなければ成功）
+<span class="fc" id="L67">    }</span>
+    
+    /**
+     * 担当者変更の直接実行権限を検証
+     * 
+     * @param executorId 実行者ID
+     * @param executorRole 実行者の役割
+     * @param executorDepartmentId 実行者の営業部ID
+     * @param customer 対象顧客
+     * @param changeRequest 変更申請
+     * @throws IllegalArgumentException 権限がない場合
+     */
+    public void validateDirectAssignmentChangeExecution(UserId executorId, Role executorRole,
+                                                       SalesDepartmentId executorDepartmentId,
+                                                       Customer customer,
+                                                       AssignmentChangeRequest changeRequest) {
+<span class="fc" id="L83">        Objects.requireNonNull(executorId, &quot;実行者IDは必須です&quot;);</span>
+<span class="fc" id="L84">        Objects.requireNonNull(executorRole, &quot;実行者の役割は必須です&quot;);</span>
+<span class="fc" id="L85">        Objects.requireNonNull(customer, &quot;対象顧客は必須です&quot;);</span>
+<span class="fc" id="L86">        Objects.requireNonNull(changeRequest, &quot;変更申請は必須です&quot;);</span>
+        
+        // 要件10.6: 情報システム部は営業部をまたいだ担当者変更を直接実行できる
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        if (executorRole.isSystemAdministrator()) {</span>
+<span class="fc" id="L90">            return; // 検証成功</span>
+        }
+        
+        // 要件10.7: 部長は同じ営業部内の担当者変更を直接実行できる
+<span class="pc bpc" id="L94" title="1 of 4 branches missed.">        if (executorRole.isDepartmentManager() &amp;&amp; changeRequest.getChangeType().isWithinDepartment()) {</span>
+<span class="pc bpc" id="L95" title="2 of 4 branches missed.">            if (executorDepartmentId != null &amp;&amp; customer.belongsToDepartment(executorDepartmentId)) {</span>
+<span class="fc" id="L96">                return; // 検証成功</span>
+            }
+        }
+        
+<span class="fc" id="L100">        throw new IllegalArgumentException(&quot;担当者変更を直接実行する権限がありません&quot;);</span>
+    }
+    
+    /**
+     * 担当者変更申請の承認権限を検証
+     * 
+     * @param approverId 承認者ID
+     * @param approverRole 承認者の役割
+     * @param approverDepartmentId 承認者の営業部ID
+     * @param changeRequest 変更申請
+     * @throws IllegalArgumentException 権限がない場合
+     */
+    public void validateAssignmentChangeApproval(UserId approverId, Role approverRole,
+                                               SalesDepartmentId approverDepartmentId,
+                                               AssignmentChangeRequest changeRequest) {
+<span class="fc" id="L115">        Objects.requireNonNull(approverId, &quot;承認者IDは必須です&quot;);</span>
+<span class="fc" id="L116">        Objects.requireNonNull(approverRole, &quot;承認者の役割は必須です&quot;);</span>
+<span class="fc" id="L117">        Objects.requireNonNull(changeRequest, &quot;変更申請は必須です&quot;);</span>
+        
+        // システム管理者は常に承認可能
+<span class="fc bfc" id="L120" title="All 2 branches covered.">        if (approverRole.isSystemAdministrator()) {</span>
+<span class="fc" id="L121">            return; // 検証成功</span>
+        }
+        
+        // 部長のみ承認可能
+<span class="fc bfc" id="L125" title="All 2 branches covered.">        if (!approverRole.isDepartmentManager()) {</span>
+<span class="fc" id="L126">            throw new IllegalArgumentException(&quot;部長のみが担当者変更申請を承認できます&quot;);</span>
+        }
+        
+        // 要件3.11: 申請者本人が部長の場合でも、自分では承認できず他の部長の承認が必要
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        if (changeRequest.getRequesterId().equals(approverId)) {</span>
+<span class="fc" id="L131">            throw new IllegalArgumentException(&quot;申請者本人は承認できません&quot;);</span>
+        }
+        
+        // 承認が必要な営業部に所属している部長のみ承認可能
+<span class="fc" id="L135">        SalesDepartmentId[] requiredDepartments = changeRequest.getRequiredApprovalDepartments();</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        for (SalesDepartmentId departmentId : requiredDepartments) {</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">            if (departmentId.equals(approverDepartmentId)) {</span>
+<span class="fc" id="L138">                return; // 検証成功</span>
+            }
+        }
+        
+<span class="fc" id="L142">        throw new IllegalArgumentException(&quot;この申請を承認する権限がありません&quot;);</span>
+    }
+    
+    /**
+     * 担当者変更申請が有効かどうかをチェック
+     * 
+     * @param changeRequest 変更申請
+     * @param customer 対象顧客
+     * @return 有効な場合true
+     */
+    public boolean isValidAssignmentChangeRequest(AssignmentChangeRequest changeRequest, Customer customer) {
+<span class="fc" id="L153">        Objects.requireNonNull(changeRequest, &quot;変更申請は必須です&quot;);</span>
+<span class="fc" id="L154">        Objects.requireNonNull(customer, &quot;対象顧客は必須です&quot;);</span>
+        
+        // 現在の担当者が申請時の担当者と一致しているかチェック
+<span class="fc bfc" id="L157" title="All 2 branches covered.">        if (!customer.getAssignedSalesRep().equals(changeRequest.getCurrentAssignment())) {</span>
+<span class="fc" id="L158">            return false;</span>
+        }
+        
+        // 顧客が編集可能な状態かチェック
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">        if (!customer.isEditable()) {</span>
+<span class="nc" id="L163">            return false;</span>
+        }
+        
+<span class="fc" id="L166">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

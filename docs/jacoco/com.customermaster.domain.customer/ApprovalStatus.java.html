@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApprovalStatus.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.customer</a> &gt; <span class="el_source">ApprovalStatus.java</span></div><h1>ApprovalStatus.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.customer;
+
+/**
+ * 承認状態
+ * 
+ * 顧客変更申請の承認状態を表す列挙型
+ */
+<span class="fc" id="L8">public enum ApprovalStatus {</span>
+    
+    /**
+     * 承認待ち
+     * 申請が提出され、部長の承認を待っている状態
+     */
+<span class="fc" id="L14">    PENDING(&quot;承認待ち&quot;),</span>
+    
+    /**
+     * 承認済み
+     * 部長によって承認され、変更が適用される状態
+     */
+<span class="fc" id="L20">    APPROVED(&quot;承認済み&quot;),</span>
+    
+    /**
+     * 却下
+     * 部長によって却下された状態
+     */
+<span class="fc" id="L26">    REJECTED(&quot;却下&quot;),</span>
+    
+    /**
+     * 期限切れ
+     * 承認期限を過ぎて自動的に却下された状態
+     */
+<span class="fc" id="L32">    EXPIRED(&quot;期限切れ&quot;);</span>
+    
+    private final String displayName;
+    
+    /**
+     * コンストラクタ
+     * 
+     * @param displayName 表示名
+     */
+<span class="fc" id="L41">    ApprovalStatus(String displayName) {</span>
+<span class="fc" id="L42">        this.displayName = displayName;</span>
+<span class="fc" id="L43">    }</span>
+    
+    /**
+     * 表示名を取得
+     * 
+     * @return 表示名
+     */
+    public String getDisplayName() {
+<span class="nc" id="L51">        return displayName;</span>
+    }
+    
+    /**
+     * 承認待ち状態かどうかを判定
+     * 
+     * @return 承認待ちの場合true
+     */
+    public boolean isPending() {
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        return this == PENDING;</span>
+    }
+    
+    /**
+     * 承認済み状態かどうかを判定
+     * 
+     * @return 承認済みの場合true
+     */
+    public boolean isApproved() {
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        return this == APPROVED;</span>
+    }
+    
+    /**
+     * 却下状態かどうかを判定
+     * 
+     * @return 却下の場合true
+     */
+    public boolean isRejected() {
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        return this == REJECTED;</span>
+    }
+    
+    /**
+     * 期限切れ状態かどうかを判定
+     * 
+     * @return 期限切れの場合true
+     */
+    public boolean isExpired() {
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        return this == EXPIRED;</span>
+    }
+    
+    /**
+     * 最終状態（承認済み、却下、期限切れ）かどうかを判定
+     * 
+     * @return 最終状態の場合true
+     */
+    public boolean isFinal() {
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        return this != PENDING;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
