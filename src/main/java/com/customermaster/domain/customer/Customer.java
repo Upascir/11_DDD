@@ -259,7 +259,7 @@ public class Customer extends Entity<CustomerId> {
             throw new IllegalStateException("現在の状態では担当者変更申請できません: " + status.getDisplayName());
         }
         
-        return AssignmentChangeRequest.create(requesterId, assignedSalesRep, 
+        return AssignmentChangeRequest.create(getId(), requesterId, assignedSalesRep, 
                                             newSalesRepId, newDepartmentId, reason);
     }
     

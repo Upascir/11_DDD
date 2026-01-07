@@ -1,6 +1,7 @@
 package com.customermaster.domain.assign;
 
 import com.customermaster.domain.user.UserId;
+import com.customermaster.domain.customer.CustomerId;
 import com.customermaster.domain.salesdepartment.SalesDepartmentId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +17,7 @@ class AssignmentChangeRequestTest {
     @DisplayName("担当者変更申請を作成できる")
     void canCreateAssignmentChangeRequest() {
         // Given
+        CustomerId customerId = CustomerId.generate();
         UserId requesterId = UserId.generate();
         AssignedSalesRepresentative currentAssignment = AssignedSalesRepresentative.assignNow(
             UserId.generate(), SalesDepartmentId.generate());
@@ -25,15 +27,19 @@ class AssignmentChangeRequestTest {
 
         // When
         AssignmentChangeRequest request = AssignmentChangeRequest.create(
-            requesterId, currentAssignment, newSalesRepId, newDepartmentId, reason);
+            customerId, requesterId, currentAssignment, newSalesRepId, newDepartmentId, reason);
 
         // Then
+        assertThat(request.getId()).isNotNull();
+        assertThat(request.getCustomerId()).isEqualTo(customerId);
         assertThat(request.getRequesterId()).isEqualTo(requesterId);
         assertThat(request.getCurrentAssignment()).isEqualTo(currentAssignment);
         assertThat(request.getNewAssignment().getSalesRepresentativeId()).isEqualTo(newSalesRepId);
         assertThat(request.getNewAssignment().getDepartmentId()).isEqualTo(newDepartmentId);
         assertThat(request.getReason()).isEqualTo(reason);
         assertThat(request.getRequestedAt()).isNotNull();
+        assertThat(request.getDeadline()).isNotNull();
+        assertThat(request.getStatus()).isEqualTo(AssignmentApprovalStatus.PENDING);
     }
 
     @Test
@@ -47,7 +53,7 @@ class AssignmentChangeRequestTest {
 
         // When
         AssignmentChangeRequest request = AssignmentChangeRequest.create(
-            UserId.generate(), currentAssignment, newSalesRepId, departmentId, "理由");
+            CustomerId.generate(), UserId.generate(), currentAssignment, newSalesRepId, departmentId, "理由");
 
         // Then
         assertThat(request.getChangeType()).isEqualTo(AssignmentChangeType.WITHIN_DEPARTMENT);
@@ -63,7 +69,7 @@ class AssignmentChangeRequestTest {
 
         // When
         AssignmentChangeRequest request = AssignmentChangeRequest.create(
-            UserId.generate(), currentAssignment, UserId.generate(), newDepartmentId, "理由");
+            CustomerId.generate(), UserId.generate(), currentAssignment, UserId.generate(), newDepartmentId, "理由");
 
         // Then
         assertThat(request.getChangeType()).isEqualTo(AssignmentChangeType.CROSS_DEPARTMENT);
@@ -78,7 +84,7 @@ class AssignmentChangeRequestTest {
 
         // When & Then
         assertThatThrownBy(() -> AssignmentChangeRequest.create(
-            UserId.generate(), currentAssignment, UserId.generate(), SalesDepartmentId.generate(), ""))
+            CustomerId.generate(), UserId.generate(), currentAssignment, UserId.generate(), SalesDepartmentId.generate(), ""))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("変更理由は必須です");
     }
@@ -92,7 +98,7 @@ class AssignmentChangeRequestTest {
 
         // When & Then
         assertThatThrownBy(() -> AssignmentChangeRequest.create(
-            UserId.generate(), currentAssignment, UserId.generate(), SalesDepartmentId.generate(), "   "))
+            CustomerId.generate(), UserId.generate(), currentAssignment, UserId.generate(), SalesDepartmentId.generate(), "   "))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("変更理由は必須です");
     }
@@ -107,7 +113,7 @@ class AssignmentChangeRequestTest {
 
         // When & Then
         assertThatThrownBy(() -> AssignmentChangeRequest.create(
-            UserId.generate(), currentAssignment, salesRepId, SalesDepartmentId.generate(), "理由"))
+            CustomerId.generate(), UserId.generate(), currentAssignment, salesRepId, SalesDepartmentId.generate(), "理由"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("同じ担当者への変更はできません");
     }
@@ -121,7 +127,7 @@ class AssignmentChangeRequestTest {
             UserId.generate(), departmentId);
         
         AssignmentChangeRequest request = AssignmentChangeRequest.create(
-            UserId.generate(), currentAssignment, UserId.generate(), departmentId, "理由");
+            CustomerId.generate(), UserId.generate(), currentAssignment, UserId.generate(), departmentId, "理由");
 
         // When
         SalesDepartmentId[] requiredDepartments = request.getRequiredApprovalDepartments();
@@ -141,7 +147,7 @@ class AssignmentChangeRequestTest {
             UserId.generate(), currentDepartmentId);
         
         AssignmentChangeRequest request = AssignmentChangeRequest.create(
-            UserId.generate(), currentAssignment, UserId.generate(), newDepartmentId, "理由");
+            CustomerId.generate(), UserId.generate(), currentAssignment, UserId.generate(), newDepartmentId, "理由");
 
         // When
         SalesDepartmentId[] requiredDepartments = request.getRequiredApprovalDepartments();
@@ -149,5 +155,119 @@ class AssignmentChangeRequestTest {
         // Then
         assertThat(requiredDepartments).hasSize(2);
         assertThat(requiredDepartments).containsExactlyInAnyOrder(currentDepartmentId, newDepartmentId);
+    }
+
+    @Test
+    @DisplayName("担当者変更申請を承認できる")
+    void canApproveAssignmentChangeRequest() {
+        // Given
+        SalesDepartmentId departmentId = SalesDepartmentId.generate();
+        AssignedSalesRepresentative currentAssignment = AssignedSalesRepresentative.assignNow(
+            UserId.generate(), departmentId);
+        
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(), UserId.generate(), currentAssignment, 
+            UserId.generate(), departmentId, "理由");
+        
+        UserId approverId = UserId.generate();
+        String comment = "承認します";
+
+        // When
+        request.approve(approverId, departmentId, comment);
+
+        // Then
+        assertThat(request.getStatus()).isEqualTo(AssignmentApprovalStatus.APPROVED);
+        assertThat(request.getApprovals()).hasSize(1);
+        assertThat(request.getApprovals().get(0).getApproverId()).isEqualTo(approverId);
+        assertThat(request.getApprovals().get(0).getComment()).isEqualTo(comment);
+        assertThat(request.getApprovals().get(0).isApproval()).isTrue();
+    }
+
+    @Test
+    @DisplayName("担当者変更申請を却下できる")
+    void canRejectAssignmentChangeRequest() {
+        // Given
+        SalesDepartmentId departmentId = SalesDepartmentId.generate();
+        AssignedSalesRepresentative currentAssignment = AssignedSalesRepresentative.assignNow(
+            UserId.generate(), departmentId);
+        
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(), UserId.generate(), currentAssignment, 
+            UserId.generate(), departmentId, "理由");
+        
+        UserId approverId = UserId.generate();
+        String reason = "却下理由";
+
+        // When
+        request.reject(approverId, departmentId, reason);
+
+        // Then
+        assertThat(request.getStatus()).isEqualTo(AssignmentApprovalStatus.REJECTED);
+        assertThat(request.getApprovals()).hasSize(1);
+        assertThat(request.getApprovals().get(0).getApproverId()).isEqualTo(approverId);
+        assertThat(request.getApprovals().get(0).getComment()).isEqualTo(reason);
+        assertThat(request.getApprovals().get(0).isApproval()).isFalse();
+    }
+
+    @Test
+    @DisplayName("営業部間変更で一方の営業部が承認した場合、部分承認状態になる")
+    void partiallyApprovedForCrossDepartmentChange() {
+        // Given
+        SalesDepartmentId currentDepartmentId = SalesDepartmentId.generate();
+        SalesDepartmentId newDepartmentId = SalesDepartmentId.generate();
+        AssignedSalesRepresentative currentAssignment = AssignedSalesRepresentative.assignNow(
+            UserId.generate(), currentDepartmentId);
+        
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(), UserId.generate(), currentAssignment, 
+            UserId.generate(), newDepartmentId, "理由");
+
+        // When - 現在の営業部から承認
+        request.approve(UserId.generate(), currentDepartmentId, "承認します");
+
+        // Then
+        assertThat(request.getStatus()).isEqualTo(AssignmentApprovalStatus.PARTIALLY_APPROVED);
+        assertThat(request.getApprovals()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("営業部間変更で両方の営業部が承認した場合、承認済み状態になる")
+    void fullyApprovedForCrossDepartmentChange() {
+        // Given
+        SalesDepartmentId currentDepartmentId = SalesDepartmentId.generate();
+        SalesDepartmentId newDepartmentId = SalesDepartmentId.generate();
+        AssignedSalesRepresentative currentAssignment = AssignedSalesRepresentative.assignNow(
+            UserId.generate(), currentDepartmentId);
+        
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(), UserId.generate(), currentAssignment, 
+            UserId.generate(), newDepartmentId, "理由");
+
+        // When - 両方の営業部から承認
+        request.approve(UserId.generate(), currentDepartmentId, "承認します");
+        request.approve(UserId.generate(), newDepartmentId, "承認します");
+
+        // Then
+        assertThat(request.getStatus()).isEqualTo(AssignmentApprovalStatus.APPROVED);
+        assertThat(request.getApprovals()).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("承認権限のない営業部からの承認は例外が発生する")
+    void throwsExceptionWhenApprovalFromUnauthorizedDepartment() {
+        // Given
+        SalesDepartmentId departmentId = SalesDepartmentId.generate();
+        SalesDepartmentId unauthorizedDepartmentId = SalesDepartmentId.generate();
+        AssignedSalesRepresentative currentAssignment = AssignedSalesRepresentative.assignNow(
+            UserId.generate(), departmentId);
+        
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(), UserId.generate(), currentAssignment, 
+            UserId.generate(), departmentId, "理由");
+
+        // When & Then
+        assertThatThrownBy(() -> request.approve(UserId.generate(), unauthorizedDepartmentId, "承認します"))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("この申請を承認する権限がありません");
     }
 }

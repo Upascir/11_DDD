@@ -75,7 +75,7 @@ public abstract class EntityId extends ValueObject {
     @Override
     public boolean equals(Object other) {
 <span class="fc bfc" id="L77" title="All 2 branches covered.">        if (this == other) return true;</span>
-<span class="pc bpc" id="L78" title="1 of 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
+<span class="pc bpc" id="L78" title="2 of 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
 <span class="fc" id="L79">        EntityId entityId = (EntityId) other;</span>
 <span class="fc" id="L80">        return Objects.equals(value, entityId.value);</span>
     }
@@ -87,7 +87,7 @@ public abstract class EntityId extends ValueObject {
     
     @Override
     public String toString() {
-<span class="nc" id="L90">        return getClass().getSimpleName() + &quot;{value='&quot; + value + &quot;'}&quot;;</span>
+<span class="fc" id="L90">        return getClass().getSimpleName() + &quot;{value='&quot; + value + &quot;'}&quot;;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

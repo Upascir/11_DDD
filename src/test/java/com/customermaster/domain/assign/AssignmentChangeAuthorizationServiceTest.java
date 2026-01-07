@@ -2,6 +2,8 @@ package com.customermaster.domain.assign;
 
 import com.customermaster.domain.customer.*;
 import com.customermaster.domain.user.UserId;
+import com.customermaster.domain.user.User;
+import com.customermaster.domain.user.UserName;
 import com.customermaster.domain.user.Role;
 import com.customermaster.domain.salesdepartment.SalesDepartmentId;
 import com.customermaster.domain.shared.Address;
@@ -49,38 +51,48 @@ class AssignmentChangeAuthorizationServiceTest {
     @DisplayName("システム管理者は常に担当者変更申請できる")
     void systemAdministratorCanAlwaysRequestAssignmentChange() {
         // Given
-        UserId adminId = UserId.generate();
-        AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
-            adminId, UserId.generate(), SalesDepartmentId.generate(), "理由");
+        User admin = User.create(
+            UserId.generate(), 
+            UserName.of("システム管理者"), 
+            Role.SYSTEM_ADMINISTRATOR, 
+            null
+        );
         
         // When & Then
         assertThatNoException().isThrownBy(() -> service.validateAssignmentChangeRequest(
-            adminId, Role.SYSTEM_ADMINISTRATOR, null, customer, changeRequest));
+            admin, customer));
     }
 
     @Test
     @DisplayName("営業担当者は自分が担当する法人の担当者変更を申請できる")
     void salesRepresentativeCanRequestForOwnCustomer() {
         // Given
-        AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
-            salesRepId, UserId.generate(), departmentId, "理由");
+        User salesRep = User.create(
+            salesRepId, 
+            UserName.of("営業担当者"), 
+            Role.SALES_REPRESENTATIVE, 
+            departmentId
+        );
         
         // When & Then
         assertThatNoException().isThrownBy(() -> service.validateAssignmentChangeRequest(
-            salesRepId, Role.SALES_REPRESENTATIVE, departmentId, customer, changeRequest));
+            salesRep, customer));
     }
 
     @Test
     @DisplayName("営業担当者は他人が担当する法人の担当者変更を申請できない")
     void salesRepresentativeCannotRequestForOthersCustomer() {
         // Given
-        UserId otherSalesRepId = UserId.generate();
-        AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
-            otherSalesRepId, UserId.generate(), departmentId, "理由");
+        User otherSalesRep = User.create(
+            UserId.generate(), 
+            UserName.of("他の営業担当者"), 
+            Role.SALES_REPRESENTATIVE, 
+            departmentId
+        );
         
         // When & Then
         assertThatThrownBy(() -> service.validateAssignmentChangeRequest(
-            otherSalesRepId, Role.SALES_REPRESENTATIVE, departmentId, customer, changeRequest))
+            otherSalesRep, customer))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("自分が担当する法人の担当者変更のみ申請できます");
     }
@@ -89,27 +101,32 @@ class AssignmentChangeAuthorizationServiceTest {
     @DisplayName("部長は同じ営業部の法人の担当者変更を申請できる")
     void departmentManagerCanRequestForSameDepartmentCustomer() {
         // Given
-        UserId managerId = UserId.generate();
-        AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
-            managerId, UserId.generate(), departmentId, "理由");
+        User manager = User.create(
+            UserId.generate(), 
+            UserName.of("部長"), 
+            Role.DEPARTMENT_MANAGER, 
+            departmentId
+        );
         
         // When & Then
         assertThatNoException().isThrownBy(() -> service.validateAssignmentChangeRequest(
-            managerId, Role.DEPARTMENT_MANAGER, departmentId, customer, changeRequest));
+            manager, customer));
     }
 
     @Test
     @DisplayName("部長は他の営業部の法人の担当者変更を申請できない")
     void departmentManagerCannotRequestForOtherDepartmentCustomer() {
         // Given
-        UserId managerId = UserId.generate();
-        SalesDepartmentId otherDepartmentId = SalesDepartmentId.generate();
-        AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
-            managerId, UserId.generate(), departmentId, "理由");
+        User manager = User.create(
+            UserId.generate(), 
+            UserName.of("他部門の部長"), 
+            Role.DEPARTMENT_MANAGER, 
+            SalesDepartmentId.generate()
+        );
         
         // When & Then
         assertThatThrownBy(() -> service.validateAssignmentChangeRequest(
-            managerId, Role.DEPARTMENT_MANAGER, otherDepartmentId, customer, changeRequest))
+            manager, customer))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("同じ営業部の法人の担当者変更のみ申請できます");
     }
@@ -119,52 +136,72 @@ class AssignmentChangeAuthorizationServiceTest {
     void cannotRequestForPendingApprovalCustomer() {
         // Given
         customer.requestApproval(); // 承認待ち状態にする
-        UserId requesterId = UserId.generate();
+        User requester = User.create(
+            salesRepId, // 担当者として設定されているユーザーIDを使用
+            UserName.of("申請者"), 
+            Role.SALES_REPRESENTATIVE, 
+            departmentId
+        );
         
         // When & Then
-        assertThatThrownBy(() -> customer.createAssignmentChangeRequest(
-            requesterId, UserId.generate(), departmentId, "理由"))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("現在の状態では担当者変更申請できません");
+        assertThatThrownBy(() -> service.validateAssignmentChangeRequest(
+            requester, customer))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("承認待ちの法人は担当者変更できません");
     }
 
     @Test
     @DisplayName("システム管理者は担当者変更を直接実行できる")
     void systemAdministratorCanDirectlyExecuteAssignmentChange() {
         // Given
-        UserId adminId = UserId.generate();
+        User admin = User.create(
+            UserId.generate(), 
+            UserName.of("システム管理者"), 
+            Role.SYSTEM_ADMINISTRATOR, 
+            null
+        );
         AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
-            adminId, UserId.generate(), SalesDepartmentId.generate(), "理由");
+            admin.getId(), UserId.generate(), SalesDepartmentId.generate(), "理由");
         
         // When & Then
         assertThatNoException().isThrownBy(() -> service.validateDirectAssignmentChangeExecution(
-            adminId, Role.SYSTEM_ADMINISTRATOR, null, customer, changeRequest));
+            admin, customer, changeRequest));
     }
 
     @Test
     @DisplayName("部長は同じ営業部内の担当者変更を直接実行できる")
     void departmentManagerCanDirectlyExecuteWithinDepartmentChange() {
         // Given
-        UserId managerId = UserId.generate();
+        User manager = User.create(
+            UserId.generate(), 
+            UserName.of("部長"), 
+            Role.DEPARTMENT_MANAGER, 
+            departmentId
+        );
         AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
-            managerId, UserId.generate(), departmentId, "理由"); // 営業部内変更
+            manager.getId(), UserId.generate(), departmentId, "理由"); // 営業部内変更
         
         // When & Then
         assertThatNoException().isThrownBy(() -> service.validateDirectAssignmentChangeExecution(
-            managerId, Role.DEPARTMENT_MANAGER, departmentId, customer, changeRequest));
+            manager, customer, changeRequest));
     }
 
     @Test
     @DisplayName("部長は営業部間の担当者変更を直接実行できない")
     void departmentManagerCannotDirectlyExecuteCrossDepartmentChange() {
         // Given
-        UserId managerId = UserId.generate();
+        User manager = User.create(
+            UserId.generate(), 
+            UserName.of("部長"), 
+            Role.DEPARTMENT_MANAGER, 
+            departmentId
+        );
         AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
-            managerId, UserId.generate(), SalesDepartmentId.generate(), "理由"); // 営業部間変更
+            manager.getId(), UserId.generate(), SalesDepartmentId.generate(), "理由"); // 営業部間変更
         
         // When & Then
         assertThatThrownBy(() -> service.validateDirectAssignmentChangeExecution(
-            managerId, Role.DEPARTMENT_MANAGER, departmentId, customer, changeRequest))
+            manager, customer, changeRequest))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("担当者変更を直接実行する権限がありません");
     }
@@ -173,14 +210,19 @@ class AssignmentChangeAuthorizationServiceTest {
     @DisplayName("部長は担当者変更申請を承認できる")
     void departmentManagerCanApproveAssignmentChange() {
         // Given
-        UserId managerId = UserId.generate();
+        User manager = User.create(
+            UserId.generate(), 
+            UserName.of("部長"), 
+            Role.DEPARTMENT_MANAGER, 
+            departmentId
+        );
         UserId requesterId = UserId.generate();
         AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
             requesterId, UserId.generate(), departmentId, "理由");
         
         // When & Then
         assertThatNoException().isThrownBy(() -> service.validateAssignmentChangeApproval(
-            managerId, Role.DEPARTMENT_MANAGER, departmentId, changeRequest));
+            manager, changeRequest));
     }
 
     @Test
@@ -188,12 +230,18 @@ class AssignmentChangeAuthorizationServiceTest {
     void requesterCannotApproveSelfRequest() {
         // Given
         UserId requesterId = UserId.generate();
+        User requester = User.create(
+            requesterId, 
+            UserName.of("申請者兼部長"), 
+            Role.DEPARTMENT_MANAGER, 
+            departmentId
+        );
         AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
             requesterId, UserId.generate(), departmentId, "理由");
         
         // When & Then
         assertThatThrownBy(() -> service.validateAssignmentChangeApproval(
-            requesterId, Role.DEPARTMENT_MANAGER, departmentId, changeRequest))
+            requester, changeRequest))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("申請者本人は承認できません");
     }
@@ -202,15 +250,19 @@ class AssignmentChangeAuthorizationServiceTest {
     @DisplayName("他の営業部の部長は承認できない")
     void otherDepartmentManagerCannotApprove() {
         // Given
-        UserId managerId = UserId.generate();
+        User manager = User.create(
+            UserId.generate(), 
+            UserName.of("他部門の部長"), 
+            Role.DEPARTMENT_MANAGER, 
+            SalesDepartmentId.generate()
+        );
         UserId requesterId = UserId.generate();
-        SalesDepartmentId otherDepartmentId = SalesDepartmentId.generate();
         AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
             requesterId, UserId.generate(), departmentId, "理由");
         
         // When & Then
         assertThatThrownBy(() -> service.validateAssignmentChangeApproval(
-            managerId, Role.DEPARTMENT_MANAGER, otherDepartmentId, changeRequest))
+            manager, changeRequest))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("この申請を承認する権限がありません");
     }
@@ -219,13 +271,19 @@ class AssignmentChangeAuthorizationServiceTest {
     @DisplayName("営業担当者は承認できない")
     void salesRepresentativeCannotApprove() {
         // Given
+        User salesRep = User.create(
+            UserId.generate(), 
+            UserName.of("営業担当者"), 
+            Role.SALES_REPRESENTATIVE, 
+            departmentId
+        );
         UserId requesterId = UserId.generate();
         AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
             requesterId, UserId.generate(), departmentId, "理由");
         
         // When & Then
         assertThatThrownBy(() -> service.validateAssignmentChangeApproval(
-            UserId.generate(), Role.SALES_REPRESENTATIVE, departmentId, changeRequest))
+            salesRep, changeRequest))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("部長のみが担当者変更申請を承認できます");
     }

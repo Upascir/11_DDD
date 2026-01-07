@@ -9,6 +9,8 @@ import com.customermaster.domain.shared.Address;
 import com.customermaster.domain.shared.ContactInfo;
 import com.customermaster.domain.shared.BankAccount;
 import com.customermaster.domain.user.UserId;
+import com.customermaster.domain.user.User;
+import com.customermaster.domain.user.UserName;
 import com.customermaster.domain.user.Role;
 import com.customermaster.domain.salesdepartment.SalesDepartmentId;
 import net.jqwik.api.*;
@@ -59,6 +61,7 @@ class AssignmentPropertiesTest {
     void canCreateValidAssignmentChangeRequest(@ForAll("validAssignmentChangeData") AssignmentChangeTestData changeData) {
         // When
         AssignmentChangeRequest changeRequest = AssignmentChangeRequest.create(
+            CustomerId.generate(),
             changeData.requesterId(),
             changeData.currentAssignment(),
             changeData.newSalesRepId(),
@@ -85,6 +88,7 @@ class AssignmentPropertiesTest {
     void changeTypeIsCorrectlyDetermined(@ForAll("validAssignmentChangeData") AssignmentChangeTestData changeData) {
         // When
         AssignmentChangeRequest changeRequest = AssignmentChangeRequest.create(
+            CustomerId.generate(),
             changeData.requesterId(),
             changeData.currentAssignment(),
             changeData.newSalesRepId(),
@@ -114,6 +118,7 @@ class AssignmentPropertiesTest {
     void requiredApprovalDepartmentsAreCorrect(@ForAll("validAssignmentChangeData") AssignmentChangeTestData changeData) {
         // When
         AssignmentChangeRequest changeRequest = AssignmentChangeRequest.create(
+            CustomerId.generate(),
             changeData.requesterId(),
             changeData.currentAssignment(),
             changeData.newSalesRepId(),
@@ -148,33 +153,36 @@ class AssignmentPropertiesTest {
         // Given
         AssignmentChangeAuthorizationService authService = new AssignmentChangeAuthorizationService();
         
+        // システム管理者以外は部門IDが必要
+        SalesDepartmentId departmentId = authData.requesterRole().isSystemAdministrator() 
+            ? null 
+            : (authData.requesterDepartmentId() != null ? authData.requesterDepartmentId() : SalesDepartmentId.generate());
+            
+        User requester = User.create(
+            authData.requesterId(),
+            UserName.of("テストユーザー"),
+            authData.requesterRole(),
+            departmentId
+        );
+        
         // When & Then
         if (authData.requesterRole().isSystemAdministrator()) {
             // システム管理者は常に申請可能
             assertThatNoException().isThrownBy(() -> authService.validateAssignmentChangeRequest(
-                authData.requesterId(),
-                authData.requesterRole(),
-                authData.requesterDepartmentId(),
-                authData.customer(),
-                authData.changeRequest()
+                requester,
+                authData.customer()
             ));
         } else if (authData.requesterRole().isSalesRepresentative() && !authData.requesterRole().isDepartmentManager()) {
             // 営業担当者は自分が担当する法人のみ申請可能
             if (authData.customer().isAssignedTo(authData.requesterId())) {
                 assertThatNoException().isThrownBy(() -> authService.validateAssignmentChangeRequest(
-                    authData.requesterId(),
-                    authData.requesterRole(),
-                    authData.requesterDepartmentId(),
-                    authData.customer(),
-                    authData.changeRequest()
+                    requester,
+                    authData.customer()
                 ));
             } else {
                 assertThatThrownBy(() -> authService.validateAssignmentChangeRequest(
-                    authData.requesterId(),
-                    authData.requesterRole(),
-                    authData.requesterDepartmentId(),
-                    authData.customer(),
-                    authData.changeRequest()
+                    requester,
+                    authData.customer()
                 )).isInstanceOf(IllegalArgumentException.class)
                   .hasMessageContaining("自分が担当する法人の担当者変更のみ申請できます");
             }
@@ -191,25 +199,33 @@ class AssignmentPropertiesTest {
         // Given
         AssignmentChangeAuthorizationService authService = new AssignmentChangeAuthorizationService();
         
+        // システム管理者以外は部門IDが必要
+        SalesDepartmentId departmentId = authData.requesterRole().isSystemAdministrator() 
+            ? null 
+            : (authData.requesterDepartmentId() != null ? authData.requesterDepartmentId() : SalesDepartmentId.generate());
+            
+        User executor = User.create(
+            authData.requesterId(),
+            UserName.of("テスト実行者"),
+            authData.requesterRole(),
+            departmentId
+        );
+        
         // When & Then
         if (authData.requesterRole().isSystemAdministrator()) {
             // 要件10.6: 情報システム部は営業部をまたいだ担当者変更を直接実行できる
             assertThatNoException().isThrownBy(() -> authService.validateDirectAssignmentChangeExecution(
-                authData.requesterId(),
-                authData.requesterRole(),
-                authData.requesterDepartmentId(),
+                executor,
                 authData.customer(),
                 authData.changeRequest()
             ));
         } else if (authData.requesterRole().isDepartmentManager() && 
                    authData.changeRequest().getChangeType().isWithinDepartment()) {
             // 要件10.7: 部長は同じ営業部内の担当者変更を直接実行できる
-            if (authData.requesterDepartmentId() != null && 
-                authData.customer().belongsToDepartment(authData.requesterDepartmentId())) {
+            if (departmentId != null && 
+                authData.customer().belongsToDepartment(departmentId)) {
                 assertThatNoException().isThrownBy(() -> authService.validateDirectAssignmentChangeExecution(
-                    authData.requesterId(),
-                    authData.requesterRole(),
-                    authData.requesterDepartmentId(),
+                    executor,
                     authData.customer(),
                     authData.changeRequest()
                 ));
@@ -227,22 +243,30 @@ class AssignmentPropertiesTest {
         // Given
         AssignmentChangeAuthorizationService authService = new AssignmentChangeAuthorizationService();
         
+        // システム管理者以外は部門IDが必要
+        SalesDepartmentId departmentId = approvalData.approverRole().isSystemAdministrator() 
+            ? null 
+            : (approvalData.approverDepartmentId() != null ? approvalData.approverDepartmentId() : SalesDepartmentId.generate());
+            
+        User approver = User.create(
+            approvalData.approverId(),
+            UserName.of("テスト承認者"),
+            approvalData.approverRole(),
+            departmentId
+        );
+        
         // When & Then
         if (approvalData.approverRole().isSystemAdministrator()) {
             // システム管理者は常に承認可能
             assertThatNoException().isThrownBy(() -> authService.validateAssignmentChangeApproval(
-                approvalData.approverId(),
-                approvalData.approverRole(),
-                approvalData.approverDepartmentId(),
+                approver,
                 approvalData.changeRequest()
             ));
         } else if (approvalData.approverRole().isDepartmentManager()) {
             // 申請者本人が部長の場合でも、自分では承認できない
             if (approvalData.changeRequest().getRequesterId().equals(approvalData.approverId())) {
                 assertThatThrownBy(() -> authService.validateAssignmentChangeApproval(
-                    approvalData.approverId(),
-                    approvalData.approverRole(),
-                    approvalData.approverDepartmentId(),
+                    approver,
                     approvalData.changeRequest()
                 )).isInstanceOf(IllegalArgumentException.class)
                   .hasMessageContaining("申請者本人は承認できません");
@@ -250,24 +274,20 @@ class AssignmentPropertiesTest {
                 // 承認が必要な営業部に所属している部長のみ承認可能
                 SalesDepartmentId[] requiredDepartments = approvalData.changeRequest().getRequiredApprovalDepartments();
                 boolean canApprove = false;
-                for (SalesDepartmentId departmentId : requiredDepartments) {
-                    if (departmentId.equals(approvalData.approverDepartmentId())) {
+                for (SalesDepartmentId requiredDepartmentId : requiredDepartments) {
+                    if (requiredDepartmentId.equals(departmentId)) {
                         canApprove = true;
                         break;
                     }
                 }
                 if (canApprove) {
                     assertThatNoException().isThrownBy(() -> authService.validateAssignmentChangeApproval(
-                        approvalData.approverId(),
-                        approvalData.approverRole(),
-                        approvalData.approverDepartmentId(),
+                        approver,
                         approvalData.changeRequest()
                     ));
                 } else {
                     assertThatThrownBy(() -> authService.validateAssignmentChangeApproval(
-                        approvalData.approverId(),
-                        approvalData.approverRole(),
-                        approvalData.approverDepartmentId(),
+                        approver,
                         approvalData.changeRequest()
                     )).isInstanceOf(IllegalArgumentException.class)
                       .hasMessageContaining("この申請を承認する権限がありません");
@@ -276,9 +296,7 @@ class AssignmentPropertiesTest {
         } else {
             // 部長以外は承認不可
             assertThatThrownBy(() -> authService.validateAssignmentChangeApproval(
-                approvalData.approverId(),
-                approvalData.approverRole(),
-                approvalData.approverDepartmentId(),
+                approver,
                 approvalData.changeRequest()
             )).isInstanceOf(IllegalArgumentException.class)
               .hasMessageContaining("部長のみが担当者変更申請を承認できます");
@@ -296,6 +314,7 @@ class AssignmentPropertiesTest {
                                                @ForAll("validReasons") String reason) {
         // When & Then - 同じ担当者への変更は不可
         assertThatThrownBy(() -> AssignmentChangeRequest.create(
+            CustomerId.generate(),
             requesterId,
             currentAssignment,
             currentAssignment.getSalesRepresentativeId(), // 同じ担当者ID
@@ -318,6 +337,7 @@ class AssignmentPropertiesTest {
                                @ForAll("emptyOrBlankStrings") String emptyReason) {
         // When & Then - 変更理由が空の場合は申請作成不可
         assertThatThrownBy(() -> AssignmentChangeRequest.create(
+            CustomerId.generate(),
             requesterId,
             currentAssignment,
             newSalesRepId,
@@ -524,6 +544,7 @@ class AssignmentPropertiesTest {
     @Provide
     Arbitrary<AssignmentChangeRequest> validAssignmentChangeRequests() {
         return validAssignmentChangeData().map(data -> AssignmentChangeRequest.create(
+            CustomerId.generate(),
             data.requesterId(),
             data.currentAssignment(),
             data.newSalesRepId(),

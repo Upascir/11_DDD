@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * 顧客
+ * 法人
  * 
- * 顧客情報を管理する集約ルート
+ * 法人情報を管理する集約ルート
  */
 public class Customer extends Entity&lt;CustomerId&gt; {
     
@@ -39,9 +39,9 @@ public class Customer extends Entity&lt;CustomerId&gt; {
     }
     
     /**
-     * コンストラクタ（新規顧客用）
+     * コンストラクタ（新規法人用）
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param basicInfo 基本情報
      * @param headquartersAddress 本社住所
      * @param representativeContact 代表連絡先
@@ -66,9 +66,9 @@ public class Customer extends Entity&lt;CustomerId&gt; {
 <span class="fc" id="L66">    }</span>
     
     /**
-     * コンストラクタ（既存顧客復元用）
+     * コンストラクタ（既存法人復元用）
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param basicInfo 基本情報
      * @param headquartersAddress 本社住所
      * @param branchAddresses 支店住所リスト
@@ -104,9 +104,9 @@ public class Customer extends Entity&lt;CustomerId&gt; {
 <span class="nc" id="L104">    }</span>
     
     /**
-     * 新規顧客を作成
+     * 新規法人を作成
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param basicInfo 基本情報
      * @param headquartersAddress 本社住所
      * @param representativeContact 代表連絡先
@@ -124,9 +124,9 @@ public class Customer extends Entity&lt;CustomerId&gt; {
     }
     
     /**
-     * 既存顧客を復元
+     * 既存法人を復元
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param basicInfo 基本情報
      * @param headquartersAddress 本社住所
      * @param branchAddresses 支店住所リスト
@@ -259,7 +259,7 @@ public class Customer extends Entity&lt;CustomerId&gt; {
 <span class="fc" id="L259">            throw new IllegalStateException(&quot;現在の状態では担当者変更申請できません: &quot; + status.getDisplayName());</span>
         }
         
-<span class="fc" id="L262">        return AssignmentChangeRequest.create(requesterId, assignedSalesRep, </span>
+<span class="fc" id="L262">        return AssignmentChangeRequest.create(getId(), requesterId, assignedSalesRep, </span>
                                             newSalesRepId, newDepartmentId, reason);
     }
     
@@ -454,11 +454,11 @@ public class Customer extends Entity&lt;CustomerId&gt; {
     
     @Override
     public String toString() {
-<span class="nc" id="L457">        return &quot;Customer{&quot; +</span>
-<span class="nc" id="L458">               &quot;id=&quot; + getId() +</span>
-<span class="nc" id="L459">               &quot;, customerName=&quot; + basicInfo.getCustomerName() +</span>
+<span class="fc" id="L457">        return &quot;Customer{&quot; +</span>
+<span class="fc" id="L458">               &quot;id=&quot; + getId() +</span>
+<span class="fc" id="L459">               &quot;, customerName=&quot; + basicInfo.getCustomerName() +</span>
                &quot;, status=&quot; + status +
-<span class="nc" id="L461">               &quot;, assignedSalesRep=&quot; + assignedSalesRep.getSalesRepresentativeId() +</span>
+<span class="fc" id="L461">               &quot;, assignedSalesRep=&quot; + assignedSalesRep.getSalesRepresentativeId() +</span>
                '}';
     }
 }

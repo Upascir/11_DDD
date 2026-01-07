@@ -102,7 +102,7 @@
   - **プロパティ6: 法人変更申請の状態遷移**
   - **検証要件: 3.1-3.18**
 
-- [ ] 4.3 AssignmentChangeRequest集約の実装
+- [x] 4.3 AssignmentChangeRequest集約の実装
   - AssignmentChangeRequestエンティティの実装
   - 担当者変更申請の基本機能
   - 営業部内・営業部間変更の区別
