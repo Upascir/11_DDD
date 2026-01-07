@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AssignmentChangeRequestId.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.assign</a> &gt; <span class="el_source">AssignmentChangeRequestId.java</span></div><h1>AssignmentChangeRequestId.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.assign;
+
+import com.customermaster.domain.shared.EntityId;
+
+/**
+ * 担当者変更申請ID
+ * 
+ * 担当者変更申請を一意に識別するID値オブジェクト
+ */
+public class AssignmentChangeRequestId extends EntityId {
+    
+    /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+    private AssignmentChangeRequestId() {
+<span class="nc" id="L16">        super(&quot;&quot;);</span>
+<span class="nc" id="L17">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
+    }
+    
+    /**
+     * コンストラクタ
+     * 
+     * @param value ID値
+     */
+    private AssignmentChangeRequestId(String value) {
+<span class="fc" id="L26">        super(value);</span>
+<span class="fc" id="L27">    }</span>
+    
+    /**
+     * 新しい担当者変更申請IDを生成
+     * 
+     * @return 新しいAssignmentChangeRequestId
+     */
+    public static AssignmentChangeRequestId generate() {
+<span class="fc" id="L35">        return new AssignmentChangeRequestId(generateNewId());</span>
+    }
+    
+    /**
+     * 既存の担当者変更申請IDから作成
+     * 
+     * @param value ID値
+     * @return AssignmentChangeRequestId
+     */
+    public static AssignmentChangeRequestId of(String value) {
+<span class="nc" id="L45">        return new AssignmentChangeRequestId(value);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

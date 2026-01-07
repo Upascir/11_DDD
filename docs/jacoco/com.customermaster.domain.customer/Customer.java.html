@@ -259,7 +259,7 @@ public class Customer extends Entity&lt;CustomerId&gt; {
 <span class="fc" id="L259">            throw new IllegalStateException(&quot;現在の状態では担当者変更申請できません: &quot; + status.getDisplayName());</span>
         }
         
-<span class="fc" id="L262">        return AssignmentChangeRequest.create(requesterId, assignedSalesRep, </span>
+<span class="fc" id="L262">        return AssignmentChangeRequest.create(getId(), requesterId, assignedSalesRep, </span>
                                             newSalesRepId, newDepartmentId, reason);
     }
     

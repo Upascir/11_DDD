@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ja"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AssignmentApproval.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.assign</a> &gt; <span class="el_source">AssignmentApproval.java</span></div><h1>AssignmentApproval.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.assign;
+
+import com.customermaster.domain.user.UserId;
+import com.customermaster.domain.salesdepartment.SalesDepartmentId;
+import com.customermaster.domain.shared.ValueObject;
+
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+/**
+ * 担当者変更申請の承認情報
+ * 
+ * 承認者、承認日時、承認コメントなどの承認に関する情報を管理する値オブジェクト
+ */
+public class AssignmentApproval extends ValueObject {
+    
+    private final UserId approverId;
+    private final SalesDepartmentId approverDepartmentId;
+    private final String comment;
+    private final LocalDateTime approvedAt;
+    private final boolean isApproval; // true: 承認, false: 却下
+    
+    /**
+     * デフォルトコンストラクタ（使用禁止）
+     */
+<span class="nc" id="L26">    private AssignmentApproval() {</span>
+<span class="nc" id="L27">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
+    }
+    
+    /**
+     * コンストラクタ
+     * 
+     * @param approverId 承認者ID
+     * @param approverDepartmentId 承認者の営業部ID
+     * @param comment 承認コメント
+     * @param approvedAt 承認日時
+     * @param isApproval 承認フラグ
+     */
+    private AssignmentApproval(UserId approverId, SalesDepartmentId approverDepartmentId,
+<span class="fc" id="L40">                              String comment, LocalDateTime approvedAt, boolean isApproval) {</span>
+<span class="fc" id="L41">        this.approverId = Objects.requireNonNull(approverId, &quot;承認者IDは必須です&quot;);</span>
+<span class="fc" id="L42">        this.approverDepartmentId = Objects.requireNonNull(approverDepartmentId, &quot;承認者の営業部IDは必須です&quot;);</span>
+<span class="fc" id="L43">        this.comment = Objects.requireNonNull(comment, &quot;コメントは必須です&quot;);</span>
+<span class="fc" id="L44">        this.approvedAt = Objects.requireNonNull(approvedAt, &quot;承認日時は必須です&quot;);</span>
+<span class="fc" id="L45">        this.isApproval = isApproval;</span>
+        
+        // ビジネスルール検証
+<span class="fc" id="L48">        validateBusinessRules();</span>
+<span class="fc" id="L49">    }</span>
+    
+    /**
+     * 承認情報を作成
+     * 
+     * @param approverId 承認者ID
+     * @param approverDepartmentId 承認者の営業部ID
+     * @param comment 承認コメント
+     * @return AssignmentApproval
+     */
+    public static AssignmentApproval approve(UserId approverId, SalesDepartmentId approverDepartmentId,
+                                           String comment) {
+<span class="fc" id="L61">        return new AssignmentApproval(approverId, approverDepartmentId, comment, </span>
+<span class="fc" id="L62">                                    LocalDateTime.now(), true);</span>
+    }
+    
+    /**
+     * 却下情報を作成
+     * 
+     * @param approverId 承認者ID
+     * @param approverDepartmentId 承認者の営業部ID
+     * @param reason 却下理由
+     * @return AssignmentApproval
+     */
+    public static AssignmentApproval reject(UserId approverId, SalesDepartmentId approverDepartmentId,
+                                          String reason) {
+<span class="fc" id="L75">        return new AssignmentApproval(approverId, approverDepartmentId, reason, </span>
+<span class="fc" id="L76">                                    LocalDateTime.now(), false);</span>
+    }
+    
+    /**
+     * 承認情報を作成（日時指定）
+     * 
+     * @param approverId 承認者ID
+     * @param approverDepartmentId 承認者の営業部ID
+     * @param comment 承認コメント
+     * @param approvedAt 承認日時
+     * @param isApproval 承認フラグ
+     * @return AssignmentApproval
+     */
+    public static AssignmentApproval of(UserId approverId, SalesDepartmentId approverDepartmentId,
+                                      String comment, LocalDateTime approvedAt, boolean isApproval) {
+<span class="nc" id="L91">        return new AssignmentApproval(approverId, approverDepartmentId, comment, approvedAt, isApproval);</span>
+    }
+    
+    /**
+     * ビジネスルールを検証
+     */
+    private void validateBusinessRules() {
+        // コメントは空文字列や空白のみは不可
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">        if (comment.trim().isEmpty()) {</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">            String action = isApproval ? &quot;承認&quot; : &quot;却下&quot;;</span>
+<span class="nc" id="L101">            throw new IllegalArgumentException(action + &quot;コメントは必須です&quot;);</span>
+        }
+<span class="fc" id="L103">    }</span>
+    
+    /**
+     * 承認かどうかを判定
+     * 
+     * @return 承認の場合true
+     */
+    public boolean isApproval() {
+<span class="fc" id="L111">        return isApproval;</span>
+    }
+    
+    /**
+     * 却下かどうかを判定
+     * 
+     * @return 却下の場合true
+     */
+    public boolean isRejection() {
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        return !isApproval;</span>
+    }
+    
+    /**
+     * 指定された営業部による承認かどうかを判定
+     * 
+     * @param departmentId 営業部ID
+     * @return 指定された営業部による承認の場合true
+     */
+    public boolean isApprovedByDepartment(SalesDepartmentId departmentId) {
+<span class="pc bpc" id="L130" title="1 of 4 branches missed.">        return isApproval &amp;&amp; approverDepartmentId.equals(departmentId);</span>
+    }
+    
+    // Getters
+<span class="fc" id="L134">    public UserId getApproverId() { return approverId; }</span>
+<span class="nc" id="L135">    public SalesDepartmentId getApproverDepartmentId() { return approverDepartmentId; }</span>
+<span class="fc" id="L136">    public String getComment() { return comment; }</span>
+<span class="nc" id="L137">    public LocalDateTime getApprovedAt() { return approvedAt; }</span>
+    
+    @Override
+    public boolean equals(Object other) {
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (this == other) return true;</span>
+<span class="nc bnc" id="L142" title="All 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
+<span class="nc" id="L143">        AssignmentApproval that = (AssignmentApproval) other;</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        return isApproval == that.isApproval &amp;&amp;</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">               Objects.equals(approverId, that.approverId) &amp;&amp;</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">               Objects.equals(approverDepartmentId, that.approverDepartmentId) &amp;&amp;</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">               Objects.equals(comment, that.comment) &amp;&amp;</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">               Objects.equals(approvedAt, that.approvedAt);</span>
+    }
+    
+    @Override
+    public int hashCode() {
+<span class="nc" id="L153">        return Objects.hash(approverId, approverDepartmentId, comment, approvedAt, isApproval);</span>
+    }
+    
+    @Override
+    public String toString() {
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        String action = isApproval ? &quot;承認&quot; : &quot;却下&quot;;</span>
+<span class="nc" id="L159">        return &quot;AssignmentApproval{&quot; +</span>
+               &quot;action=&quot; + action +
+               &quot;, approverId=&quot; + approverId +
+               &quot;, approverDepartmentId=&quot; + approverDepartmentId +
+               &quot;, comment='&quot; + comment + '\'' +
+               &quot;, approvedAt=&quot; + approvedAt +
+               '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

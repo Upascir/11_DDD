@@ -409,10 +409,10 @@ public class AssignmentChangeRequest extends Entity&lt;AssignmentChangeRequestId
     
     @Override
     public boolean equals(Object other) {
-<span class="pc bpc" id="L412" title="1 of 2 branches missed.">        if (this == other) return true;</span>
-<span class="pc bpc" id="L413" title="2 of 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
-<span class="fc" id="L414">        AssignmentChangeRequest that = (AssignmentChangeRequest) other;</span>
-<span class="fc" id="L415">        return Objects.equals(getId(), that.getId());</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">        if (this == other) return true;</span>
+<span class="nc bnc" id="L413" title="All 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
+<span class="nc" id="L414">        AssignmentChangeRequest that = (AssignmentChangeRequest) other;</span>
+<span class="nc" id="L415">        return Objects.equals(getId(), that.getId());</span>
     }
     
     @Override
@@ -422,14 +422,14 @@ public class AssignmentChangeRequest extends Entity&lt;AssignmentChangeRequestId
     
     @Override
     public String toString() {
-<span class="fc" id="L425">        return &quot;AssignmentChangeRequest{&quot; +</span>
-<span class="fc" id="L426">               &quot;id=&quot; + getId() +</span>
+<span class="nc" id="L425">        return &quot;AssignmentChangeRequest{&quot; +</span>
+<span class="nc" id="L426">               &quot;id=&quot; + getId() +</span>
                &quot;, customerId=&quot; + customerId +
                &quot;, requesterId=&quot; + requesterId +
                &quot;, changeType=&quot; + changeType +
                &quot;, status=&quot; + status +
-<span class="fc" id="L431">               &quot;, currentAssignment=&quot; + currentAssignment.getSalesRepresentativeId() +</span>
-<span class="fc" id="L432">               &quot;, newAssignment=&quot; + newAssignment.getSalesRepresentativeId() +</span>
+<span class="nc" id="L431">               &quot;, currentAssignment=&quot; + currentAssignment.getSalesRepresentativeId() +</span>
+<span class="nc" id="L432">               &quot;, newAssignment=&quot; + newAssignment.getSalesRepresentativeId() +</span>
                &quot;, reason='&quot; + reason + '\'' +
                &quot;, requestedAt=&quot; + requestedAt +
                &quot;, deadline=&quot; + deadline +

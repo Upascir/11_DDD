@@ -1,62 +1,83 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AssignmentChangeRequest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">customer-master-system</a> &gt; <a href="index.source.html" class="el_package">com.customermaster.domain.assign</a> &gt; <span class="el_source">AssignmentChangeRequest.java</span></div><h1>AssignmentChangeRequest.java</h1><pre class="source lang-java linenums">package com.customermaster.domain.assign;
 
 import com.customermaster.domain.user.UserId;
+import com.customermaster.domain.customer.CustomerId;
 import com.customermaster.domain.salesdepartment.SalesDepartmentId;
-import com.customermaster.domain.shared.ValueObject;
+import com.customermaster.domain.shared.Entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
- * 担当者変更申請
+ * 担当者変更申請集約
  * 
- * 法人の担当者変更申請に関する情報を管理する値オブジェクト
+ * 法人の担当者変更申請に関する情報を管理する集約ルート
  * 担当者割り当てドメインの中核的な概念
  */
-public class AssignmentChangeRequest extends ValueObject {
+public class AssignmentChangeRequest extends Entity&lt;AssignmentChangeRequestId&gt; {
     
+    private final CustomerId customerId;
     private final UserId requesterId;
     private final AssignedSalesRepresentative currentAssignment;
     private final AssignedSalesRepresentative newAssignment;
     private final AssignmentChangeType changeType;
     private final String reason;
     private final LocalDateTime requestedAt;
+    private final LocalDateTime deadline;
+    private AssignmentApprovalStatus status;
+    private final List&lt;AssignmentApproval&gt; approvals;
     
     /**
      * デフォルトコンストラクタ（使用禁止）
      */
-<span class="nc" id="L28">    private AssignmentChangeRequest() {</span>
-<span class="nc" id="L29">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
+    private AssignmentChangeRequest() {
+<span class="nc" id="L36">        super(null);</span>
+<span class="nc" id="L37">        throw new UnsupportedOperationException(&quot;ファクトリメソッドを使用してください&quot;);</span>
     }
     
     /**
      * コンストラクタ
      * 
+     * @param requestId 申請ID
+     * @param customerId 法人ID
      * @param requesterId 申請者ID（必須）
      * @param currentAssignment 現在の担当者（必須）
      * @param newAssignment 新しい担当者（必須）
      * @param reason 変更理由（必須）
      * @param requestedAt 申請日時（必須）
      */
-    private AssignmentChangeRequest(UserId requesterId, AssignedSalesRepresentative currentAssignment,
+    private AssignmentChangeRequest(AssignmentChangeRequestId requestId, CustomerId customerId,
+                                   UserId requesterId, AssignedSalesRepresentative currentAssignment,
                                    AssignedSalesRepresentative newAssignment, String reason,
-<span class="fc" id="L43">                                   LocalDateTime requestedAt) {</span>
-<span class="fc" id="L44">        this.requesterId = Objects.requireNonNull(requesterId, &quot;申請者IDは必須です&quot;);</span>
-<span class="fc" id="L45">        this.currentAssignment = Objects.requireNonNull(currentAssignment, &quot;現在の担当者は必須です&quot;);</span>
-<span class="fc" id="L46">        this.newAssignment = Objects.requireNonNull(newAssignment, &quot;新しい担当者は必須です&quot;);</span>
-<span class="fc" id="L47">        this.reason = Objects.requireNonNull(reason, &quot;変更理由は必須です&quot;);</span>
-<span class="fc" id="L48">        this.requestedAt = Objects.requireNonNull(requestedAt, &quot;申請日時は必須です&quot;);</span>
+                                   LocalDateTime requestedAt) {
+<span class="fc" id="L55">        super(requestId);</span>
+<span class="fc" id="L56">        this.customerId = Objects.requireNonNull(customerId, &quot;法人IDは必須です&quot;);</span>
+<span class="fc" id="L57">        this.requesterId = Objects.requireNonNull(requesterId, &quot;申請者IDは必須です&quot;);</span>
+<span class="fc" id="L58">        this.currentAssignment = Objects.requireNonNull(currentAssignment, &quot;現在の担当者は必須です&quot;);</span>
+<span class="fc" id="L59">        this.newAssignment = Objects.requireNonNull(newAssignment, &quot;新しい担当者は必須です&quot;);</span>
+<span class="fc" id="L60">        this.reason = Objects.requireNonNull(reason, &quot;変更理由は必須です&quot;);</span>
+<span class="fc" id="L61">        this.requestedAt = Objects.requireNonNull(requestedAt, &quot;申請日時は必須です&quot;);</span>
         
         // 変更種類を判定
-<span class="fc" id="L51">        this.changeType = determineChangeType(currentAssignment, newAssignment);</span>
+<span class="fc" id="L64">        this.changeType = determineChangeType(currentAssignment, newAssignment);</span>
+        
+        // 承認期限を設定（申請から1週間後）
+<span class="fc" id="L67">        this.deadline = requestedAt.plusWeeks(1);</span>
+        
+        // 初期状態は申請中
+<span class="fc" id="L70">        this.status = AssignmentApprovalStatus.PENDING;</span>
+<span class="fc" id="L71">        this.approvals = new ArrayList&lt;&gt;();</span>
         
         // ビジネスルール検証
-<span class="fc" id="L54">        validateBusinessRules();</span>
-<span class="fc" id="L55">    }</span>
+<span class="fc" id="L74">        validateBusinessRules();</span>
+<span class="fc" id="L75">    }</span>
     
     /**
      * 担当者変更申請を作成
      * 
+     * @param customerId 法人ID
      * @param requesterId 申請者ID
      * @param currentAssignment 現在の担当者
      * @param newSalesRepId 新しい営業担当者ID
@@ -64,35 +85,48 @@ public class AssignmentChangeRequest extends ValueObject {
      * @param reason 変更理由
      * @return AssignmentChangeRequest
      */
-    public static AssignmentChangeRequest create(UserId requesterId, 
+    public static AssignmentChangeRequest create(CustomerId customerId, UserId requesterId, 
                                                AssignedSalesRepresentative currentAssignment,
                                                UserId newSalesRepId, 
                                                SalesDepartmentId newDepartmentId,
                                                String reason) {
-<span class="fc" id="L72">        AssignedSalesRepresentative newAssignment = AssignedSalesRepresentative.assignNow(</span>
+<span class="fc" id="L93">        AssignedSalesRepresentative newAssignment = AssignedSalesRepresentative.assignNow(</span>
             newSalesRepId, newDepartmentId);
         
-<span class="fc" id="L75">        return new AssignmentChangeRequest(requesterId, currentAssignment, newAssignment, </span>
-<span class="fc" id="L76">                                         reason, LocalDateTime.now());</span>
+<span class="fc" id="L96">        return new AssignmentChangeRequest(AssignmentChangeRequestId.generate(), customerId,</span>
+                                         requesterId, currentAssignment, newAssignment, 
+<span class="fc" id="L98">                                         reason, LocalDateTime.now());</span>
     }
     
     /**
-     * 担当者変更申請を作成（申請日時指定）
+     * 担当者変更申請を復元（永続化からの復元用）
      * 
+     * @param requestId 申請ID
+     * @param customerId 法人ID
      * @param requesterId 申請者ID
      * @param currentAssignment 現在の担当者
      * @param newAssignment 新しい担当者
      * @param reason 変更理由
      * @param requestedAt 申請日時
+     * @param status 承認ステータス
+     * @param approvals 承認リスト
      * @return AssignmentChangeRequest
      */
-    public static AssignmentChangeRequest of(UserId requesterId,
-                                           AssignedSalesRepresentative currentAssignment,
-                                           AssignedSalesRepresentative newAssignment,
-                                           String reason,
-                                           LocalDateTime requestedAt) {
-<span class="nc" id="L94">        return new AssignmentChangeRequest(requesterId, currentAssignment, newAssignment, </span>
-                                         reason, requestedAt);
+    public static AssignmentChangeRequest restore(AssignmentChangeRequestId requestId,
+                                                CustomerId customerId,
+                                                UserId requesterId,
+                                                AssignedSalesRepresentative currentAssignment,
+                                                AssignedSalesRepresentative newAssignment,
+                                                String reason,
+                                                LocalDateTime requestedAt,
+                                                AssignmentApprovalStatus status,
+                                                List&lt;AssignmentApproval&gt; approvals) {
+<span class="nc" id="L124">        AssignmentChangeRequest request = new AssignmentChangeRequest(requestId, customerId,</span>
+                                                                    requesterId, currentAssignment, 
+                                                                    newAssignment, reason, requestedAt);
+<span class="nc" id="L127">        request.status = status;</span>
+<span class="nc" id="L128">        request.approvals.addAll(approvals);</span>
+<span class="nc" id="L129">        return request;</span>
     }
     
     /**
@@ -104,10 +138,10 @@ public class AssignmentChangeRequest extends ValueObject {
      */
     private AssignmentChangeType determineChangeType(AssignedSalesRepresentative current,
                                                    AssignedSalesRepresentative newAssignment) {
-<span class="fc bfc" id="L107" title="All 2 branches covered.">        if (current.isCrossDepartmentChange(newAssignment.getDepartmentId())) {</span>
-<span class="fc" id="L108">            return AssignmentChangeType.CROSS_DEPARTMENT;</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        if (current.isCrossDepartmentChange(newAssignment.getDepartmentId())) {</span>
+<span class="fc" id="L142">            return AssignmentChangeType.CROSS_DEPARTMENT;</span>
         } else {
-<span class="fc" id="L110">            return AssignmentChangeType.WITHIN_DEPARTMENT;</span>
+<span class="fc" id="L144">            return AssignmentChangeType.WITHIN_DEPARTMENT;</span>
         }
     }
     
@@ -116,15 +150,183 @@ public class AssignmentChangeRequest extends ValueObject {
      */
     private void validateBusinessRules() {
         // 変更理由は空文字列や空白のみは不可
-<span class="fc bfc" id="L119" title="All 2 branches covered.">        if (reason.trim().isEmpty()) {</span>
-<span class="fc" id="L120">            throw new IllegalArgumentException(&quot;変更理由は必須です&quot;);</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        if (reason.trim().isEmpty()) {</span>
+<span class="fc" id="L154">            throw new IllegalArgumentException(&quot;変更理由は必須です&quot;);</span>
         }
         
         // 同じ担当者への変更は不可
-<span class="fc bfc" id="L124" title="All 2 branches covered.">        if (currentAssignment.getSalesRepresentativeId().equals(newAssignment.getSalesRepresentativeId())) {</span>
-<span class="fc" id="L125">            throw new IllegalArgumentException(&quot;同じ担当者への変更はできません&quot;);</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        if (currentAssignment.getSalesRepresentativeId().equals(newAssignment.getSalesRepresentativeId())) {</span>
+<span class="fc" id="L159">            throw new IllegalArgumentException(&quot;同じ担当者への変更はできません&quot;);</span>
         }
-<span class="fc" id="L127">    }</span>
+<span class="fc" id="L161">    }</span>
+    
+    /**
+     * 担当者変更申請を承認
+     * 
+     * @param approverId 承認者ID
+     * @param approverDepartmentId 承認者の営業部ID
+     * @param comment 承認コメント
+     * @throws IllegalStateException 承認できない状態の場合
+     */
+    public void approve(UserId approverId, SalesDepartmentId approverDepartmentId, String comment) {
+        // 承認可能な状態かチェック
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">        if (!status.isPending()) {</span>
+<span class="nc" id="L174">            throw new IllegalStateException(&quot;承認待ち状態でない申請は承認できません&quot;);</span>
+        }
+        
+        // 承認期限チェック
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">        if (isExpired()) {</span>
+<span class="nc" id="L179">            this.status = AssignmentApprovalStatus.EXPIRED;</span>
+<span class="nc" id="L180">            throw new IllegalStateException(&quot;承認期限を過ぎた申請は承認できません&quot;);</span>
+        }
+        
+        // 承認権限チェック（承認が必要な営業部に所属しているかチェック）
+<span class="fc" id="L184">        SalesDepartmentId[] requiredDepartments = getRequiredApprovalDepartments();</span>
+<span class="fc" id="L185">        boolean hasAuthority = false;</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">        for (SalesDepartmentId departmentId : requiredDepartments) {</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">            if (departmentId.equals(approverDepartmentId)) {</span>
+<span class="fc" id="L188">                hasAuthority = true;</span>
+<span class="fc" id="L189">                break;</span>
+            }
+        }
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        if (!hasAuthority) {</span>
+<span class="fc" id="L193">            throw new IllegalArgumentException(&quot;この申請を承認する権限がありません&quot;);</span>
+        }
+        
+        // 既に同じ営業部から承認されていないかチェック
+<span class="fc bfc" id="L197" title="All 2 branches covered.">        for (AssignmentApproval approval : approvals) {</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">            if (approval.isApprovedByDepartment(approverDepartmentId)) {</span>
+<span class="nc" id="L199">                throw new IllegalStateException(&quot;既に同じ営業部から承認されています&quot;);</span>
+            }
+<span class="fc" id="L201">        }</span>
+        
+        // 承認を追加
+<span class="fc" id="L204">        AssignmentApproval approval = AssignmentApproval.approve(approverId, approverDepartmentId, comment);</span>
+<span class="fc" id="L205">        approvals.add(approval);</span>
+        
+        // ステータスを更新
+<span class="fc" id="L208">        updateStatusAfterApproval();</span>
+<span class="fc" id="L209">    }</span>
+    
+    /**
+     * 担当者変更申請を却下
+     * 
+     * @param approverId 承認者ID
+     * @param approverDepartmentId 承認者の営業部ID
+     * @param reason 却下理由
+     * @throws IllegalStateException 却下できない状態の場合
+     */
+    public void reject(UserId approverId, SalesDepartmentId approverDepartmentId, String reason) {
+        // 却下可能な状態かチェック
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">        if (!status.isPending()) {</span>
+<span class="nc" id="L222">            throw new IllegalStateException(&quot;承認待ち状態でない申請は却下できません&quot;);</span>
+        }
+        
+        // 承認権限チェック
+<span class="fc" id="L226">        SalesDepartmentId[] requiredDepartments = getRequiredApprovalDepartments();</span>
+<span class="fc" id="L227">        boolean hasAuthority = false;</span>
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">        for (SalesDepartmentId departmentId : requiredDepartments) {</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">            if (departmentId.equals(approverDepartmentId)) {</span>
+<span class="fc" id="L230">                hasAuthority = true;</span>
+<span class="fc" id="L231">                break;</span>
+            }
+        }
+<span class="pc bpc" id="L234" title="1 of 2 branches missed.">        if (!hasAuthority) {</span>
+<span class="nc" id="L235">            throw new IllegalArgumentException(&quot;この申請を却下する権限がありません&quot;);</span>
+        }
+        
+        // 却下を追加
+<span class="fc" id="L239">        AssignmentApproval rejection = AssignmentApproval.reject(approverId, approverDepartmentId, reason);</span>
+<span class="fc" id="L240">        approvals.add(rejection);</span>
+        
+        // ステータスを却下に変更
+<span class="fc" id="L243">        this.status = AssignmentApprovalStatus.REJECTED;</span>
+<span class="fc" id="L244">    }</span>
+    
+    /**
+     * 申請内容を更新（再申請）
+     * 
+     * @param newAssignment 新しい担当者
+     * @param newReason 新しい変更理由
+     * @throws IllegalStateException 更新できない状態の場合
+     */
+    public void updateRequest(AssignedSalesRepresentative newAssignment, String newReason) {
+        // 編集可能な状態かチェック
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        if (!status.isEditable()) {</span>
+<span class="nc" id="L256">            throw new IllegalStateException(&quot;編集できない状態です&quot;);</span>
+        }
+        
+        // 新しい内容で更新（不変オブジェクトなので新しいインスタンスを作成する必要があるが、
+        // ここでは簡略化のため例外をスローする）
+<span class="nc" id="L261">        throw new UnsupportedOperationException(&quot;申請内容の更新は新しい申請として作成してください&quot;);</span>
+    }
+    
+    /**
+     * 承認期限が過ぎているかどうかを判定
+     * 
+     * @return 承認期限が過ぎている場合true
+     */
+    public boolean isExpired() {
+<span class="fc" id="L270">        return LocalDateTime.now().isAfter(deadline);</span>
+    }
+    
+    /**
+     * 承認後のステータス更新
+     */
+    private void updateStatusAfterApproval() {
+<span class="fc" id="L277">        SalesDepartmentId[] requiredDepartments = getRequiredApprovalDepartments();</span>
+        
+        // 必要な全ての営業部から承認を得られているかチェック
+<span class="fc" id="L280">        int approvedDepartmentCount = 0;</span>
+<span class="fc bfc" id="L281" title="All 2 branches covered.">        for (SalesDepartmentId departmentId : requiredDepartments) {</span>
+<span class="fc bfc" id="L282" title="All 2 branches covered.">            for (AssignmentApproval approval : approvals) {</span>
+<span class="fc bfc" id="L283" title="All 2 branches covered.">                if (approval.isApprovedByDepartment(departmentId)) {</span>
+<span class="fc" id="L284">                    approvedDepartmentCount++;</span>
+<span class="fc" id="L285">                    break;</span>
+                }
+<span class="fc" id="L287">            }</span>
+        }
+        
+<span class="fc bfc" id="L290" title="All 2 branches covered.">        if (approvedDepartmentCount == requiredDepartments.length) {</span>
+            // 全ての必要な承認を得られた場合
+<span class="fc" id="L292">            this.status = AssignmentApprovalStatus.APPROVED;</span>
+<span class="pc bpc" id="L293" title="2 of 4 branches missed.">        } else if (changeType.isCrossDepartment() &amp;&amp; approvedDepartmentCount &gt; 0) {</span>
+            // 営業部間変更で一部の承認を得られた場合
+<span class="fc" id="L295">            this.status = AssignmentApprovalStatus.PARTIALLY_APPROVED;</span>
+        }
+        // それ以外は PENDING のまま
+<span class="fc" id="L298">    }</span>
+    
+    /**
+     * 承認が必要な営業部のリストを取得
+     * 
+     * @return 承認が必要な営業部IDの配列
+     */
+    public SalesDepartmentId[] getRequiredApprovalDepartments() {
+<span class="fc bfc" id="L306" title="All 2 branches covered.">        if (changeType.isCrossDepartment()) {</span>
+            // 営業部間変更の場合、両方の営業部の承認が必要
+<span class="fc" id="L308">            return new SalesDepartmentId[] {</span>
+<span class="fc" id="L309">                currentAssignment.getDepartmentId(),</span>
+<span class="fc" id="L310">                newAssignment.getDepartmentId()</span>
+            };
+        } else {
+            // 営業部内変更の場合、現在の営業部の承認のみ必要
+<span class="fc" id="L314">            return new SalesDepartmentId[] {</span>
+<span class="fc" id="L315">                currentAssignment.getDepartmentId()</span>
+            };
+        }
+    }
+    
+    // Getters
+<span class="fc" id="L321">    public CustomerId getCustomerId() { return customerId; }</span>
+<span class="fc" id="L322">    public UserId getRequesterId() { return requesterId; }</span>
+<span class="fc" id="L323">    public AssignedSalesRepresentative getCurrentAssignment() { return currentAssignment; }</span>
+<span class="fc" id="L324">    public AssignedSalesRepresentative getNewAssignment() { return newAssignment; }</span>
+<span class="fc" id="L325">    public AssignmentChangeType getChangeType() { return changeType; }</span>
+<span class="fc" id="L326">    public String getReason() { return reason; }</span>
+<span class="fc" id="L327">    public LocalDateTime getRequestedAt() { return requestedAt; }</span>
+<span class="fc" id="L328">    public LocalDateTime getDeadline() { return deadline; }</span>
+<span class="fc" id="L329">    public AssignmentApprovalStatus getStatus() { return status; }</span>
     
     /**
      * 申請者が現在の担当者かどうかを判定
@@ -132,7 +334,7 @@ public class AssignmentChangeRequest extends ValueObject {
      * @return 申請者が現在の担当者の場合true
      */
     public boolean isRequestedByCurrentAssignee() {
-<span class="nc" id="L135">        return currentAssignment.isAssignedTo(requesterId);</span>
+<span class="nc" id="L337">        return currentAssignment.isAssignedTo(requesterId);</span>
     }
     
     /**
@@ -142,63 +344,95 @@ public class AssignmentChangeRequest extends ValueObject {
      * @return 申請者が指定された営業部に所属している場合true
      */
     public boolean isRequesterFromDepartment(SalesDepartmentId departmentId) {
-<span class="nc" id="L145">        return currentAssignment.belongsToDepartment(departmentId);</span>
+<span class="nc" id="L347">        return currentAssignment.belongsToDepartment(departmentId);</span>
     }
     
     /**
-     * 承認が必要な営業部のリストを取得
+     * 完全に承認されているかどうかを判定
      * 
-     * @return 承認が必要な営業部IDの配列
+     * @return 完全に承認されている場合true
      */
-    public SalesDepartmentId[] getRequiredApprovalDepartments() {
-<span class="fc bfc" id="L154" title="All 2 branches covered.">        if (changeType.isCrossDepartment()) {</span>
-            // 営業部間変更の場合、両方の営業部の承認が必要
-<span class="fc" id="L156">            return new SalesDepartmentId[] {</span>
-<span class="fc" id="L157">                currentAssignment.getDepartmentId(),</span>
-<span class="fc" id="L158">                newAssignment.getDepartmentId()</span>
-            };
-        } else {
-            // 営業部内変更の場合、現在の営業部の承認のみ必要
-<span class="fc" id="L162">            return new SalesDepartmentId[] {</span>
-<span class="fc" id="L163">                currentAssignment.getDepartmentId()</span>
-            };
-        }
+    public boolean isFullyApproved() {
+<span class="nc" id="L356">        return status.isApproved();</span>
     }
     
-    // Getters
-<span class="fc" id="L169">    public UserId getRequesterId() { return requesterId; }</span>
-<span class="fc" id="L170">    public AssignedSalesRepresentative getCurrentAssignment() { return currentAssignment; }</span>
-<span class="fc" id="L171">    public AssignedSalesRepresentative getNewAssignment() { return newAssignment; }</span>
-<span class="fc" id="L172">    public AssignmentChangeType getChangeType() { return changeType; }</span>
-<span class="fc" id="L173">    public String getReason() { return reason; }</span>
-<span class="fc" id="L174">    public LocalDateTime getRequestedAt() { return requestedAt; }</span>
+    /**
+     * 承認待ち状態かどうかを判定
+     * 
+     * @return 承認待ち状態の場合true
+     */
+    public boolean isPending() {
+<span class="nc" id="L365">        return status.isPending();</span>
+    }
+    
+    /**
+     * 却下されているかどうかを判定
+     * 
+     * @return 却下されている場合true
+     */
+    public boolean isRejected() {
+<span class="nc" id="L374">        return status.isRejected();</span>
+    }
+    
+    /**
+     * 編集可能かどうかを判定
+     * 
+     * @return 編集可能な場合true
+     */
+    public boolean isEditable() {
+<span class="nc" id="L383">        return status.isEditable();</span>
+    }
+    
+    /**
+     * 指定された営業部から承認済みかどうかを判定
+     * 
+     * @param departmentId 営業部ID
+     * @return 指定された営業部から承認済みの場合true
+     */
+    public boolean isApprovedByDepartment(SalesDepartmentId departmentId) {
+<span class="nc bnc" id="L393" title="All 2 branches missed.">        for (AssignmentApproval approval : approvals) {</span>
+<span class="nc bnc" id="L394" title="All 2 branches missed.">            if (approval.isApprovedByDepartment(departmentId)) {</span>
+<span class="nc" id="L395">                return true;</span>
+            }
+<span class="nc" id="L397">        }</span>
+<span class="nc" id="L398">        return false;</span>
+    }
+    
+    /**
+     * 承認履歴を取得
+     * 
+     * @return 承認履歴のコピー
+     */
+    public List&lt;AssignmentApproval&gt; getApprovals() {
+<span class="fc" id="L407">        return new ArrayList&lt;&gt;(approvals);</span>
+    }
     
     @Override
     public boolean equals(Object other) {
-<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (this == other) return true;</span>
-<span class="nc bnc" id="L179" title="All 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
-<span class="nc" id="L180">        AssignmentChangeRequest that = (AssignmentChangeRequest) other;</span>
-<span class="nc bnc" id="L181" title="All 2 branches missed.">        return Objects.equals(requesterId, that.requesterId) &amp;&amp;</span>
-<span class="nc bnc" id="L182" title="All 2 branches missed.">               Objects.equals(currentAssignment, that.currentAssignment) &amp;&amp;</span>
-<span class="nc bnc" id="L183" title="All 2 branches missed.">               Objects.equals(newAssignment, that.newAssignment) &amp;&amp;</span>
-<span class="nc bnc" id="L184" title="All 2 branches missed.">               Objects.equals(reason, that.reason) &amp;&amp;</span>
-<span class="nc bnc" id="L185" title="All 2 branches missed.">               Objects.equals(requestedAt, that.requestedAt);</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">        if (this == other) return true;</span>
+<span class="nc bnc" id="L413" title="All 4 branches missed.">        if (other == null || getClass() != other.getClass()) return false;</span>
+<span class="nc" id="L414">        AssignmentChangeRequest that = (AssignmentChangeRequest) other;</span>
+<span class="nc" id="L415">        return Objects.equals(getId(), that.getId());</span>
     }
     
     @Override
     public int hashCode() {
-<span class="nc" id="L190">        return Objects.hash(requesterId, currentAssignment, newAssignment, reason, requestedAt);</span>
+<span class="nc" id="L420">        return Objects.hash(getId());</span>
     }
     
     @Override
     public String toString() {
-<span class="nc" id="L195">        return &quot;AssignmentChangeRequest{&quot; +</span>
-               &quot;requesterId=&quot; + requesterId +
+<span class="nc" id="L425">        return &quot;AssignmentChangeRequest{&quot; +</span>
+<span class="nc" id="L426">               &quot;id=&quot; + getId() +</span>
+               &quot;, customerId=&quot; + customerId +
+               &quot;, requesterId=&quot; + requesterId +
                &quot;, changeType=&quot; + changeType +
-<span class="nc" id="L198">               &quot;, currentAssignment=&quot; + currentAssignment.getSalesRepresentativeId() +</span>
-<span class="nc" id="L199">               &quot;, newAssignment=&quot; + newAssignment.getSalesRepresentativeId() +</span>
+               &quot;, status=&quot; + status +
+<span class="nc" id="L431">               &quot;, currentAssignment=&quot; + currentAssignment.getSalesRepresentativeId() +</span>
+<span class="nc" id="L432">               &quot;, newAssignment=&quot; + newAssignment.getSalesRepresentativeId() +</span>
                &quot;, reason='&quot; + reason + '\'' +
                &quot;, requestedAt=&quot; + requestedAt +
+               &quot;, deadline=&quot; + deadline +
                '}';
     }
 }
