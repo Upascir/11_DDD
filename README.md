@@ -81,6 +81,21 @@ GRANT ALL PRIVILEGES ON DATABASE customer_master TO customer_master_user;
 - **PostgreSQL**: localhost:5432
 - **フロントエンド**: http://localhost:3000（後で設定）
 
+## テストレポート
+
+プロジェクトのテストカバレッジとテスト結果は以下で確認できます：
+
+- **📊 [テストレポート (GitHub Pages)](https://upascir.github.io/11_DDD/)** - JaCoCo カバレッジレポート、Surefire テストレポート、Maven サイトレポート
+
+### ローカルでのレポート生成
+```bash
+# テストレポート生成
+scripts\generate-reports.cmd
+
+# 生成されたレポートの確認
+# docs/index.html をブラウザで開く
+```
+
 ## プロジェクト構造
 
 ```
