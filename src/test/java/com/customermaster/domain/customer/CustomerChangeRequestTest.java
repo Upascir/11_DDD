@@ -28,7 +28,7 @@ class CustomerChangeRequestTest {
         customerId = CustomerId.generate();
         requesterId = UserId.generate();
         approverId = UserId.generate();
-        requestReason = "顧客情報の更新が必要です";
+        requestReason = "法人情報の更新が必要です";
         
         // テスト用のCustomerSnapshotを作成
         originalData = CustomerSnapshot.of(
@@ -84,7 +84,7 @@ class CustomerChangeRequestTest {
             assertThatThrownBy(() -> CustomerChangeRequest.create(
                 null, originalData, proposedData, requesterId, requestReason
             )).isInstanceOf(NullPointerException.class)
-              .hasMessageContaining("顧客IDは必須です");
+              .hasMessageContaining("法人IDは必須です");
             
             assertThatThrownBy(() -> CustomerChangeRequest.create(
                 customerId, null, proposedData, requesterId, requestReason
@@ -137,10 +137,10 @@ class CustomerChangeRequestTest {
         }
         
         @Test
-        @DisplayName("顧客IDが変更される場合は例外をスローする")
+        @DisplayName("法人IDが変更される場合は例外をスローする")
         void shouldThrowExceptionWhenCustomerIdIsChanged() {
             CustomerSnapshot differentCustomerData = CustomerSnapshot.of(
-                CustomerId.generate(),  // 異なる顧客ID
+                CustomerId.generate(),  // 異なる法人ID
                 CustomerName.of("田中太郎"),
                 Address.of("160-0001", "東京都", "新宿区", "2-2-2"),
                 ContactInfo.of("03-1234-5678", "03-1234-5679", "tanaka@example.com")
@@ -149,7 +149,7 @@ class CustomerChangeRequestTest {
             assertThatThrownBy(() -> CustomerChangeRequest.create(
                 customerId, originalData, differentCustomerData, requesterId, requestReason
             )).isInstanceOf(IllegalArgumentException.class)
-              .hasMessageContaining("顧客IDは変更できません");
+              .hasMessageContaining("法人IDは変更できません");
         }
     }
     

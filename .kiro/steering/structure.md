@@ -11,7 +11,7 @@ src/
 │   ├── java/com/customermaster/
 │   │   ├── domain/              # ドメイン層（コアビジネスロジック）
 │   │   │   ├── shared/          # 共有ドメイン概念
-│   │   │   ├── customer/        # 顧客集約
+│   │   │   ├── customer/        # 法人集約
 │   │   │   ├── salesdepartment/ # 営業部門集約
 │   │   │   ├── user/            # ユーザー集約
 │   │   │   └── assign/          # 担当者割り当て管理
@@ -51,7 +51,7 @@ src/
 
 ### ドメインパッケージ
 - `domain.shared`: 横断的ドメイン概念（ValueObject、EntityId）
-- `domain.customer`: 顧客集約と関連値オブジェクト
+- `domain.customer`: 法人集約と関連値オブジェクト
 - `domain.salesdepartment`: 営業部門集約
 - `domain.user`: ユーザー集約と認証概念
 - `domain.assign`: 担当者割り当て管理（担当者変更申請、認可サービス）

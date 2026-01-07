@@ -10,15 +10,15 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * CustomerChangeRequest集約のプロパティテスト
  * 
- * **Feature: customer-master-system, Property 6: 顧客変更申請の状態遷移**
+ * **Feature: customer-master-system, Property 6: 法人変更申請の状態遷移**
  * **Validates: Requirements 3.1-3.18**
  */
 class CustomerChangeRequestPropertiesTest {
 
     /**
-     * プロパティ6: 顧客変更申請の状態遷移
+     * プロパティ6: 法人変更申請の状態遷移
      * 
-     * 任意の顧客変更申請について、状態遷移が要件通りに動作することを検証
+     * 任意の法人変更申請について、状態遷移が要件通りに動作することを検証
      * - 初期状態は必ずPENDING
      * - PENDING状態からのみ承認・却下・期限切れが可能
      * - 承認・却下・期限切れ後は状態変更不可
@@ -28,7 +28,7 @@ class CustomerChangeRequestPropertiesTest {
      * **Validates: Requirements 3.1-3.18**
      */
     @Property(tries = 100)
-    void 顧客変更申請の状態遷移が正しく動作する(
+    void 法人変更申請の状態遷移が正しく動作する(
             @ForAll("validCustomerChangeRequest") CustomerChangeRequest request,
             @ForAll("validUserId") UserId approverId,
             @ForAll("validComment") String comment) {
@@ -68,7 +68,7 @@ class CustomerChangeRequestPropertiesTest {
     /**
      * 自己承認制限のプロパティテスト
      * 
-     * 任意の顧客変更申請について、申請者本人による承認・却下は不可能であることを検証
+     * 任意の法人変更申請について、申請者本人による承認・却下は不可能であることを検証
      * 
      * **Validates: Requirements 3.11**
      */
@@ -96,7 +96,7 @@ class CustomerChangeRequestPropertiesTest {
     /**
      * 却下後の状態遷移プロパティテスト
      * 
-     * 任意の顧客変更申請について、却下後は最終状態となり、再処理不可能であることを検証
+     * 任意の法人変更申請について、却下後は最終状態となり、再処理不可能であることを検証
      * 
      * **Validates: Requirements 3.8, 3.9**
      */
@@ -134,7 +134,7 @@ class CustomerChangeRequestPropertiesTest {
     /**
      * 期限切れ処理のプロパティテスト
      * 
-     * 任意の顧客変更申請について、期限切れ処理が正しく動作することを検証
+     * 任意の法人変更申請について、期限切れ処理が正しく動作することを検証
      * 
      * **Validates: Requirements 3.14, 3.15**
      */
@@ -156,7 +156,7 @@ class CustomerChangeRequestPropertiesTest {
     /**
      * 申請内容更新のプロパティテスト
      * 
-     * 任意の顧客変更申請について、PENDING状態でのみ申請内容を更新可能であることを検証
+     * 任意の法人変更申請について、PENDING状態でのみ申請内容を更新可能であることを検証
      * 
      * **Validates: Requirements 3.17**
      */
@@ -168,10 +168,10 @@ class CustomerChangeRequestPropertiesTest {
         // PENDING状態では更新可能
         assertThat(request.isPending()).isTrue();
         
-        // 同じ顧客IDで異なるデータを作成
+        // 同じ法人IDで異なるデータを作成
         CustomerId customerId = request.getCustomerId();
         CustomerSnapshot newProposedData = CustomerSnapshot.of(
-            customerId,  // 同じ顧客IDを使用
+            customerId,  // 同じ法人IDを使用
             CustomerName.of("更新後の会社名株式会社"),
             Address.of("111-2222", "神奈川県", "横浜市", "更新後住所3-3-3"),
             ContactInfo.of("045-1111-2222", null, "updated@example.com")
@@ -191,7 +191,7 @@ class CustomerChangeRequestPropertiesTest {
     /**
      * コメント・理由の必須性プロパティテスト
      * 
-     * 任意の顧客変更申請について、承認時はコメント、却下時は理由が必須であることを検証
+     * 任意の法人変更申請について、承認時はコメント、却下時は理由が必須であることを検証
      * 
      * **Validates: Requirements 3.12, 3.13**
      */
@@ -230,7 +230,7 @@ class CustomerChangeRequestPropertiesTest {
             validUserId(),
             validReason()
         ).as((requesterId, reason) -> {
-            // 同じ顧客IDを使用してoriginalDataとproposedDataを作成
+            // 同じ法人IDを使用してoriginalDataとproposedDataを作成
             CustomerId customerId = CustomerId.generate();
             
             // originalDataを作成
@@ -241,9 +241,9 @@ class CustomerChangeRequestPropertiesTest {
                 ContactInfo.of("03-1234-5678", null, "original@example.com")
             );
             
-            // proposedData（変更後データ）を作成 - 同じ顧客IDで異なる内容
+            // proposedData（変更後データ）を作成 - 同じ法人IDで異なる内容
             CustomerSnapshot proposedData = CustomerSnapshot.of(
-                customerId,  // 同じ顧客IDを使用
+                customerId,  // 同じ法人IDを使用
                 CustomerName.of("変更後の会社名株式会社"),
                 Address.of("987-6543", "大阪府", "中央区", "変更後住所2-2-2"),
                 ContactInfo.of("06-9876-5432", null, "changed@example.com")

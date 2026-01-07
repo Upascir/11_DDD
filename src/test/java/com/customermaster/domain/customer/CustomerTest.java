@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 class CustomerTest {
 
     @Test
-    @DisplayName("新規顧客を作成できる")
+    @DisplayName("新規法人を作成できる")
     void canCreateNewCustomer() {
         // Given
         CustomerId customerId = CustomerId.generate();
@@ -240,10 +240,10 @@ class CustomerTest {
     @Test
     @DisplayName("支払い信頼性を判定できる")
     void canDeterminePaymentReliability() {
-        // Given - 信用度BBBの顧客（信頼できる）
+        // Given - 信用度BBBの法人（信頼できる）
         Customer reliableCustomer = createCustomerWithCreditRank(CreditInfo.CreditRank.BBB);
         
-        // Given - 信用度Cの顧客（信頼できない）
+        // Given - 信用度Cの法人（信頼できない）
         Customer unreliableCustomer = createCustomerWithCreditRank(CreditInfo.CreditRank.C);
         
         // When & Then

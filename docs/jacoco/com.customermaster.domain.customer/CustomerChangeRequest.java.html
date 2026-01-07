@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * 顧客変更申請
+ * 法人変更申請
  * 
- * 顧客情報の変更申請を管理する集約ルート
+ * 法人情報の変更申請を管理する集約ルート
  * 承認ワークフローの中核となるエンティティ
  */
 public class CustomerChangeRequest extends Entity&lt;CustomerChangeRequestId&gt; {
@@ -35,7 +35,7 @@ public class CustomerChangeRequest extends Entity&lt;CustomerChangeRequestId&gt;
      * コンストラクタ
      * 
      * @param requestId 申請ID
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param originalData 変更前データ
      * @param proposedData 変更後データ
      * @param requesterId 申請者ID
@@ -45,7 +45,7 @@ public class CustomerChangeRequest extends Entity&lt;CustomerChangeRequestId&gt;
                                 CustomerSnapshot originalData, CustomerSnapshot proposedData,
                                 UserId requesterId, String requestReason) {
 <span class="fc" id="L47">        super(requestId);</span>
-<span class="fc" id="L48">        this.customerId = Objects.requireNonNull(customerId, &quot;顧客IDは必須です&quot;);</span>
+<span class="fc" id="L48">        this.customerId = Objects.requireNonNull(customerId, &quot;法人IDは必須です&quot;);</span>
 <span class="fc" id="L49">        this.originalData = Objects.requireNonNull(originalData, &quot;変更前データは必須です&quot;);</span>
 <span class="fc" id="L50">        this.proposedData = Objects.requireNonNull(proposedData, &quot;変更後データは必須です&quot;);</span>
 <span class="fc" id="L51">        this.requesterId = Objects.requireNonNull(requesterId, &quot;申請者IDは必須です&quot;);</span>
@@ -58,9 +58,9 @@ public class CustomerChangeRequest extends Entity&lt;CustomerChangeRequestId&gt;
 <span class="fc" id="L58">    }</span>
     
     /**
-     * 顧客変更申請を作成
+     * 法人変更申請を作成
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param originalData 変更前データ
      * @param proposedData 変更後データ
      * @param requesterId 申請者ID
@@ -208,7 +208,7 @@ public class CustomerChangeRequest extends Entity&lt;CustomerChangeRequestId&gt;
      */
     private void validateProposedData() {
 <span class="fc bfc" id="L210" title="All 2 branches covered.">        if (!originalData.getCustomerId().equals(proposedData.getCustomerId())) {</span>
-<span class="fc" id="L211">            throw new IllegalArgumentException(&quot;顧客IDは変更できません&quot;);</span>
+<span class="fc" id="L211">            throw new IllegalArgumentException(&quot;法人IDは変更できません&quot;);</span>
         }
         
 <span class="fc bfc" id="L214" title="All 2 branches covered.">        if (originalData.equals(proposedData)) {</span>

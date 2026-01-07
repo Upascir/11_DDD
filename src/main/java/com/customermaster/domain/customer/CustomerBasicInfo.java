@@ -7,9 +7,9 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 /**
- * 顧客基本情報
+ * 法人基本情報
  * 
- * 顧客の基本的な企業情報を管理する値オブジェクト
+ * 法人の基本的な企業情報を管理する値オブジェクト
  */
 public class CustomerBasicInfo extends ValueObject {
     
@@ -31,8 +31,8 @@ public class CustomerBasicInfo extends ValueObject {
     /**
      * コンストラクタ
      * 
-     * @param customerName 顧客名（必須）
-     * @param customerNameKana 顧客名カナ（必須）
+     * @param customerName 法人名（必須）
+     * @param customerNameKana 法人名カナ（必須）
      * @param industryClassification 業界分類（必須）
      * @param establishedDate 設立年月日（任意）
      * @param employeeCount 従業員数（任意）
@@ -42,8 +42,8 @@ public class CustomerBasicInfo extends ValueObject {
     private CustomerBasicInfo(CustomerName customerName, String customerNameKana, 
                              String industryClassification, LocalDate establishedDate,
                              Integer employeeCount, BigDecimal capital, BigDecimal annualRevenue) {
-        this.customerName = Objects.requireNonNull(customerName, "顧客名は必須です");
-        this.customerNameKana = validateRequired(customerNameKana, "顧客名カナ");
+        this.customerName = Objects.requireNonNull(customerName, "法人名は必須です");
+        this.customerNameKana = validateRequired(customerNameKana, "法人名カナ");
         this.industryClassification = validateRequired(industryClassification, "業界分類");
         this.establishedDate = establishedDate;
         this.employeeCount = validateEmployeeCount(employeeCount);
@@ -82,10 +82,10 @@ public class CustomerBasicInfo extends ValueObject {
     }
     
     /**
-     * 顧客基本情報を作成
+     * 法人基本情報を作成
      * 
-     * @param customerName 顧客名
-     * @param customerNameKana 顧客名カナ
+     * @param customerName 法人名
+     * @param customerNameKana 法人名カナ
      * @param industryClassification 業界分類
      * @param establishedDate 設立年月日
      * @param employeeCount 従業員数
@@ -101,10 +101,10 @@ public class CustomerBasicInfo extends ValueObject {
     }
     
     /**
-     * 顧客基本情報を作成（必須項目のみ）
+     * 法人基本情報を作成（必須項目のみ）
      * 
-     * @param customerName 顧客名
-     * @param customerNameKana 顧客名カナ
+     * @param customerName 法人名
+     * @param customerNameKana 法人名カナ
      * @param industryClassification 業界分類
      * @return CustomerBasicInfo
      */

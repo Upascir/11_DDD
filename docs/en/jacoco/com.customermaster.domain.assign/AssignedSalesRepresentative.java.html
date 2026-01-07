@@ -10,7 +10,7 @@ import java.util.Objects;
 /**
  * 担当営業者
  * 
- * 顧客に割り当てられた営業担当者の情報を管理する値オブジェクト
+ * 法人に割り当てられた営業担当者の情報を管理する値オブジェクト
  */
 public class AssignedSalesRepresentative extends ValueObject {
     

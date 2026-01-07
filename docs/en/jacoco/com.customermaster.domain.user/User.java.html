@@ -131,11 +131,11 @@ public class User extends Entity&lt;UserId&gt; {
     // ビジネスメソッド
     
     /**
-     * 顧客データ変更を承認できるかどうかを判定
+     * 法人データ変更を承認できるかどうかを判定
      * 
      * 注意: 部門一致確認は呼び出し側またはドメインサービスで行う必要がある
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @return 基本的な承認権限を持つ場合true
      */
     public boolean canApproveCustomerChange(CustomerId customerId) {
@@ -166,9 +166,9 @@ public class User extends Entity&lt;UserId&gt; {
     }
     
     /**
-     * 顧客データを直接更新できるかどうかを判定
+     * 法人データを直接更新できるかどうかを判定
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @return 直接更新可能な場合true
      */
     public boolean canDirectlyUpdateCustomer(CustomerId customerId) {

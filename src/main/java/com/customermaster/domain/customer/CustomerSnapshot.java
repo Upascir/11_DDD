@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 顧客スナップショット
+ * 法人スナップショット
  * 
- * 変更申請時点での顧客情報を保存する不変オブジェクト
+ * 変更申請時点での法人情報を保存する不変オブジェクト
  * 差分計算や変更履歴の管理に使用される
  */
 public class CustomerSnapshot extends ValueObject {
@@ -41,7 +41,7 @@ public class CustomerSnapshot extends ValueObject {
     /**
      * コンストラクタ
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param basicInfo 基本情報
      * @param headquartersAddress 本社住所
      * @param branchAddresses 支店住所リスト
@@ -57,7 +57,7 @@ public class CustomerSnapshot extends ValueObject {
                            ContactInfo representativeContact, List<ContactInfo> contactPersons,
                            BankAccount mainBankAccount, List<BankAccount> subBankAccounts,
                            AssignedSalesRepresentative assignedSalesRep, CreditInfo creditInfo) {
-        this.customerId = Objects.requireNonNull(customerId, "顧客IDは必須です");
+        this.customerId = Objects.requireNonNull(customerId, "法人IDは必須です");
         this.basicInfo = Objects.requireNonNull(basicInfo, "基本情報は必須です");
         this.headquartersAddress = Objects.requireNonNull(headquartersAddress, "本社住所は必須です");
         this.branchAddresses = List.copyOf(Objects.requireNonNull(branchAddresses, "支店住所リストは必須です"));
@@ -70,9 +70,9 @@ public class CustomerSnapshot extends ValueObject {
     }
     
     /**
-     * 顧客からスナップショットを作成
+     * 法人からスナップショットを作成
      * 
-     * @param customer 顧客
+     * @param customer 法人
      * @return CustomerSnapshot
      */
     public static CustomerSnapshot from(Customer customer) {
@@ -93,8 +93,8 @@ public class CustomerSnapshot extends ValueObject {
     /**
      * テスト用の簡単なスナップショットを作成
      * 
-     * @param customerId 顧客ID
-     * @param customerName 顧客名
+     * @param customerId 法人ID
+     * @param customerName 法人名
      * @param address 住所
      * @param contactInfo 連絡先
      * @return CustomerSnapshot

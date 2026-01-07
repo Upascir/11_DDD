@@ -30,7 +30,7 @@ class AssignmentChangeAuthorizationServiceTest {
     void setUp() {
         service = new AssignmentChangeAuthorizationService();
         
-        // テスト用の顧客を作成
+        // テスト用の法人を作成
         salesRepId = UserId.generate();
         departmentId = SalesDepartmentId.generate();
         
@@ -59,7 +59,7 @@ class AssignmentChangeAuthorizationServiceTest {
     }
 
     @Test
-    @DisplayName("営業担当者は自分が担当する顧客の担当者変更を申請できる")
+    @DisplayName("営業担当者は自分が担当する法人の担当者変更を申請できる")
     void salesRepresentativeCanRequestForOwnCustomer() {
         // Given
         AssignmentChangeRequest changeRequest = customer.createAssignmentChangeRequest(
@@ -71,7 +71,7 @@ class AssignmentChangeAuthorizationServiceTest {
     }
 
     @Test
-    @DisplayName("営業担当者は他人が担当する顧客の担当者変更を申請できない")
+    @DisplayName("営業担当者は他人が担当する法人の担当者変更を申請できない")
     void salesRepresentativeCannotRequestForOthersCustomer() {
         // Given
         UserId otherSalesRepId = UserId.generate();
@@ -82,11 +82,11 @@ class AssignmentChangeAuthorizationServiceTest {
         assertThatThrownBy(() -> service.validateAssignmentChangeRequest(
             otherSalesRepId, Role.SALES_REPRESENTATIVE, departmentId, customer, changeRequest))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("自分が担当する顧客の担当者変更のみ申請できます");
+            .hasMessageContaining("自分が担当する法人の担当者変更のみ申請できます");
     }
 
     @Test
-    @DisplayName("部長は同じ営業部の顧客の担当者変更を申請できる")
+    @DisplayName("部長は同じ営業部の法人の担当者変更を申請できる")
     void departmentManagerCanRequestForSameDepartmentCustomer() {
         // Given
         UserId managerId = UserId.generate();
@@ -99,7 +99,7 @@ class AssignmentChangeAuthorizationServiceTest {
     }
 
     @Test
-    @DisplayName("部長は他の営業部の顧客の担当者変更を申請できない")
+    @DisplayName("部長は他の営業部の法人の担当者変更を申請できない")
     void departmentManagerCannotRequestForOtherDepartmentCustomer() {
         // Given
         UserId managerId = UserId.generate();
@@ -111,11 +111,11 @@ class AssignmentChangeAuthorizationServiceTest {
         assertThatThrownBy(() -> service.validateAssignmentChangeRequest(
             managerId, Role.DEPARTMENT_MANAGER, otherDepartmentId, customer, changeRequest))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("同じ営業部の顧客の担当者変更のみ申請できます");
+            .hasMessageContaining("同じ営業部の法人の担当者変更のみ申請できます");
     }
 
     @Test
-    @DisplayName("承認待ち状態の顧客は担当者変更申請できない")
+    @DisplayName("承認待ち状態の法人は担当者変更申請できない")
     void cannotRequestForPendingApprovalCustomer() {
         // Given
         customer.requestApproval(); // 承認待ち状態にする

@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * 信用情報
  * 
- * 顧客の信用度や財務情報を管理する値オブジェクト
+ * 法人の信用度や財務情報を管理する値オブジェクト
  */
 public class CreditInfo extends ValueObject {
     

@@ -19,17 +19,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Customer集約のプロパティベーステスト
  * 
- * プロパティ4: 顧客情報の整合性
+ * プロパティ4: 法人情報の整合性
  * 検証要件: 2.1-2.8, 2.9
  */
 class CustomerPropertiesTest {
 
     /**
-     * プロパティ4: 新規顧客作成の整合性
-     * 任意の有効な顧客データで顧客を作成できる
+     * プロパティ4: 新規法人作成の整合性
+     * 任意の有効な法人データで法人を作成できる
      */
     @Property
-    @Label("Feature: customer-master-system, Property 4: 新規顧客作成の整合性")
+    @Label("Feature: customer-master-system, Property 4: 新規法人作成の整合性")
     void canCreateCustomerWithValidData(@ForAll("validCustomerData") CustomerData customerData) {
         // When
         Customer customer = Customer.create(
@@ -54,11 +54,11 @@ class CustomerPropertiesTest {
     }
 
     /**
-     * プロパティ4: 顧客情報の構造完全性
-     * 作成された顧客が必要な全ての情報を持つ
+     * プロパティ4: 法人情報の構造完全性
+     * 作成された法人が必要な全ての情報を持つ
      */
     @Property
-    @Label("Feature: customer-master-system, Property 4: 顧客情報の構造完全性")
+    @Label("Feature: customer-master-system, Property 4: 法人情報の構造完全性")
     void customerHasAllRequiredInformation(@ForAll("validCustomerData") CustomerData customerData) {
         // When
         Customer customer = Customer.create(
@@ -87,7 +87,7 @@ class CustomerPropertiesTest {
     @Property
     @Label("Feature: customer-master-system, Property 4: 基本情報の構造完全性")
     void basicInfoHasAllRequiredFields(@ForAll("validBasicInfo") CustomerBasicInfo basicInfo) {
-        // Then - 顧客名、業界分類、設立年月日、従業員数、資本金、年商が含まれる
+        // Then - 法人名、業界分類、設立年月日、従業員数、資本金、年商が含まれる
         assertThat(basicInfo.getCustomerName()).isNotNull();
         assertThat(basicInfo.getCustomerNameKana()).isNotNull();
         assertThat(basicInfo.getIndustryClassification()).isNotNull();
@@ -200,13 +200,13 @@ class CustomerPropertiesTest {
     }
 
     /**
-     * プロパティ4: 顧客ID生成の一意性
-     * 生成される顧客IDが常に一意である
+     * プロパティ4: 法人ID生成の一意性
+     * 生成される法人IDが常に一意である
      */
     @Property
-    @Label("Feature: customer-master-system, Property 4: 顧客ID生成の一意性")
+    @Label("Feature: customer-master-system, Property 4: 法人ID生成の一意性")
     void customerIdGenerationUniqueness() {
-        // When - 複数の顧客IDを生成
+        // When - 複数の法人IDを生成
         Set<CustomerId> generatedIds = new HashSet<>();
         for (int i = 0; i < 1000; i++) {
             generatedIds.add(CustomerId.generate());
@@ -238,7 +238,7 @@ class CustomerPropertiesTest {
 
     /**
      * プロパティ4: 担当営業者の必須性
-     * 全ての顧客に担当営業者が設定される
+     * 全ての法人に担当営業者が設定される
      */
     @Property
     @Label("Feature: customer-master-system, Property 4: 担当営業者の必須性")

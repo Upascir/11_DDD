@@ -3,7 +3,7 @@ package com.customermaster.domain.customer;
 /**
  * 承認状態
  * 
- * 顧客変更申請の承認状態を表す列挙型
+ * 法人変更申請の承認状態を表す列挙型
  */
 public enum ApprovalStatus {
     

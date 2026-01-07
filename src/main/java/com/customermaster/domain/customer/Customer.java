@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * 顧客
+ * 法人
  * 
- * 顧客情報を管理する集約ルート
+ * 法人情報を管理する集約ルート
  */
 public class Customer extends Entity<CustomerId> {
     
@@ -39,9 +39,9 @@ public class Customer extends Entity<CustomerId> {
     }
     
     /**
-     * コンストラクタ（新規顧客用）
+     * コンストラクタ（新規法人用）
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param basicInfo 基本情報
      * @param headquartersAddress 本社住所
      * @param representativeContact 代表連絡先
@@ -66,9 +66,9 @@ public class Customer extends Entity<CustomerId> {
     }
     
     /**
-     * コンストラクタ（既存顧客復元用）
+     * コンストラクタ（既存法人復元用）
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param basicInfo 基本情報
      * @param headquartersAddress 本社住所
      * @param branchAddresses 支店住所リスト
@@ -104,9 +104,9 @@ public class Customer extends Entity<CustomerId> {
     }
     
     /**
-     * 新規顧客を作成
+     * 新規法人を作成
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param basicInfo 基本情報
      * @param headquartersAddress 本社住所
      * @param representativeContact 代表連絡先
@@ -124,9 +124,9 @@ public class Customer extends Entity<CustomerId> {
     }
     
     /**
-     * 既存顧客を復元
+     * 既存法人を復元
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param basicInfo 基本情報
      * @param headquartersAddress 本社住所
      * @param branchAddresses 支店住所リスト

@@ -1,4 +1,4 @@
--- 顧客マスタ管理システム用データベース初期化スクリプト
+-- 法人マスタ管理システム用データベース初期化スクリプト
 
 -- データベースが存在しない場合は作成（Docker Composeで既に作成されているため、通常は不要）
 -- CREATE DATABASE IF NOT EXISTS customer_master;

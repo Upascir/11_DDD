@@ -12,7 +12,7 @@
     <artifactId>customer-master-system</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>customer-master-system</name>
-    <description>顧客マスタ管理システム</description>
+    <description>法人マスタ管理システム</description>
     <properties>
         <java.version>17</java.version>
         <!-- Test Report Plugins Versions -->

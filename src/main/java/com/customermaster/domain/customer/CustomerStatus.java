@@ -1,9 +1,9 @@
 package com.customermaster.domain.customer;
 
 /**
- * 顧客ステータス
+ * 法人ステータス
  * 
- * 顧客の承認状態を表現する列挙型
+ * 法人の承認状態を表現する列挙型
  */
 public enum CustomerStatus {
     

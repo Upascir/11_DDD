@@ -3,9 +3,9 @@
 import com.customermaster.domain.shared.Name;
 
 /**
- * 顧客名
+ * 法人名
  * 
- * 顧客の名称を表現する値オブジェクト
+ * 法人の名称を表現する値オブジェクト
  */
 public class CustomerName extends Name {
     
@@ -14,7 +14,7 @@ public class CustomerName extends Name {
     /**
      * コンストラクタ
      * 
-     * @param value 顧客名
+     * @param value 法人名
      */
     private CustomerName(String value) {
 <span class="fc" id="L20">        super(value);</span>
@@ -23,7 +23,7 @@ public class CustomerName extends Name {
     /**
      * 文字列からCustomerNameを作成
      * 
-     * @param value 顧客名
+     * @param value 法人名
      * @return CustomerName
      */
     public static CustomerName of(String value) {

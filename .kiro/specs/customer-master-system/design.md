@@ -1,8 +1,8 @@
-# 顧客マスタ管理システム - 設計ドキュメント
+# 法人マスタ管理システム - 設計ドキュメント
 
 ## 概要
 
-本ドキュメントは、顧客マスタ管理システムのDDD（ドメイン駆動設計）に基づく設計仕様を定義する。複数営業部制による組織管理、担当制顧客管理、部署別承認ワークフローを中心とした設計を行う。
+本ドキュメントは、法人マスタ管理システムのDDD（ドメイン駆動設計）に基づく設計仕様を定義する。複数営業部制による組織管理、担当制法人管理、部署別承認ワークフローを中心とした設計を行う。
 
 ## アーキテクチャ
 
@@ -50,14 +50,14 @@
 - SalesDepartment集約
 - User集約
 
-### 2. 顧客管理コンテキスト (Customer Management)
+### 2. 法人管理コンテキスト (Customer Management)
 
-**責務**: 顧客情報の管理と担当者の紐づけ
+**責務**: 法人情報の管理と担当者の紐づけ
 
 **主要概念**:
-- 顧客 (Customer)
+- 法人 (Customer)
 - 担当営業者 (AssignedSalesRepresentative)
-- 顧客情報 (CustomerInformation)
+- 法人情報 (CustomerInformation)
 
 **集約**:
 - Customer集約
@@ -67,7 +67,7 @@
 **責務**: 変更申請と承認プロセスの管理
 
 **主要概念**:
-- 顧客情報変更申請 (CustomerChangeRequest)
+- 法人情報変更申請 (CustomerChangeRequest)
 - 担当者変更申請 (AssignmentChangeRequest)
 - 営業部間担当者変更申請 (CrossDepartmentAssignmentRequest)
 - 承認 (Approval)
@@ -115,7 +115,7 @@
 
 ```
 ┌─────────────────┐    ┌─────────────────┐
-│   組織管理      │────│   顧客管理      │
+│   組織管理      │────│   法人管理      │
 │  コンテキスト   │    │  コンテキスト   │
 └─────────────────┘    └─────────────────┘
          │                       │
@@ -136,15 +136,15 @@
 
 ## 集約設計
 
-### 1. Customer集約 (顧客管理コンテキスト)
+### 1. Customer集約 (法人管理コンテキスト)
 
 **集約ルート**: Customer
 
 **エンティティ**:
-- Customer (顧客)
+- Customer (法人)
 
 **値オブジェクト**:
-- CustomerId (顧客ID)
+- CustomerId (法人ID)
 - CustomerBasicInfo (基本情報)
 - Address (住所)
 - ContactInfo (連絡先情報)
@@ -152,8 +152,8 @@
 - AssignedSalesRepresentative (担当営業者)
 
 **不変条件**:
-- 顧客には必ず担当営業者が設定されている
-- 顧客名（正式名称）は一意である
+- 法人には必ず担当営業者が設定されている
+- 法人名（正式名称）は一意である
 - 本社住所は必須である
 - メイン口座は必須である
 
@@ -169,11 +169,11 @@
 **集約ルート**: CustomerChangeRequest
 
 **エンティティ**:
-- CustomerChangeRequest (顧客情報変更申請)
+- CustomerChangeRequest (法人情報変更申請)
 
 **値オブジェクト**:
 - ChangeRequestId (変更申請ID)
-- CustomerId (顧客ID)
+- CustomerId (法人ID)
 - CustomerSnapshot (変更前スナップショット)
 - ProposedCustomerData (変更後データ)
 - Approval (承認情報)
@@ -201,7 +201,7 @@
 
 **値オブジェクト**:
 - AssignmentChangeRequestId (担当者変更申請ID)
-- CustomerId (顧客ID)
+- CustomerId (法人ID)
 - CurrentAssignment (現在の担当者)
 - ProposedAssignment (変更後の担当者)
 - ApprovalRequirements (承認要件)
@@ -259,9 +259,9 @@
 
 ## ドメインサービス
 
-### 1. CustomerAssignmentService (顧客割り当てサービス)
+### 1. CustomerAssignmentService (法人割り当てサービス)
 
-**責務**: 顧客の担当営業者割り当てロジック
+**責務**: 法人の担当営業者割り当てロジック
 
 **主要メソッド**:
 - `assignSalesRepresentative(CustomerId, SalesRepresentativeId)`
@@ -277,9 +277,9 @@
 - `findEligibleApprovers(ChangeRequestId)`
 - `validateSelfApprovalRestriction(RequesterId, ApproverId)`
 
-### 3. CustomerDataDiffService (顧客データ差分サービス)
+### 3. CustomerDataDiffService (法人データ差分サービス)
 
-**責務**: 顧客データの差分計算ロジック
+**責務**: 法人データの差分計算ロジック
 
 **主要メソッド**:
 - `calculateDiff(CustomerSnapshot, ProposedCustomerData)`
@@ -402,18 +402,18 @@ public class User {
 
 ### ユースケース
 
-#### 1. 顧客管理ユースケース
+#### 1. 法人管理ユースケース
 
-- `RegisterCustomerUseCase`: 新規顧客登録
-- `UpdateCustomerUseCase`: 顧客情報更新
-- `FindCustomerUseCase`: 顧客検索・取得
-- `ListCustomersUseCase`: 顧客一覧取得
+- `RegisterCustomerUseCase`: 新規法人登録
+- `UpdateCustomerUseCase`: 法人情報更新
+- `FindCustomerUseCase`: 法人検索・取得
+- `ListCustomersUseCase`: 法人一覧取得
 
 #### 2. 承認ワークフローユースケース
 
-- `RequestCustomerUpdateUseCase`: 顧客更新申請
+- `RequestCustomerUpdateUseCase`: 法人更新申請
 - `RequestAssignmentChangeUseCase`: 担当者変更申請
-- `ApproveCustomerChangeUseCase`: 顧客変更申請承認
+- `ApproveCustomerChangeUseCase`: 法人変更申請承認
 - `ApproveAssignmentChangeUseCase`: 担当者変更申請承認
 - `RejectChangeRequestUseCase`: 変更申請却下
 - `ListPendingRequestsUseCase`: 承認待ち申請一覧
@@ -533,12 +533,12 @@ public class CustomerController {
 #### アクセス制御ルール
 
 **営業担当者**:
-- 同じ営業部の全顧客情報にアクセス可能
-- 同じ営業部の全顧客情報を更新（変更申請）可能
-- 担当顧客の担当者変更を申請可能
+- 同じ営業部の全法人情報にアクセス可能
+- 同じ営業部の全法人情報を更新（変更申請）可能
+- 担当法人の担当者変更を申請可能
 
 **部長**:
-- 同じ営業部の顧客と承認申請にアクセス可能
+- 同じ営業部の法人と承認申請にアクセス可能
 - 同じ営業部内の担当者変更を直接実行可能
 - 営業部間担当者変更の承認権限
 
@@ -587,13 +587,13 @@ public class NotificationEventHandler {
 
 ### データベース設計
 
-- **インデックス**: 顧客名、営業部ID、担当営業者IDにインデックス設定
+- **インデックス**: 法人名、営業部ID、担当営業者IDにインデックス設定
 - **パーティショニング**: 履歴テーブルの日付ベースパーティショニング
 - **キャッシュ**: 銀行マスタ、業界分類マスタのRedisキャッシュ
 
 ### API設計
 
-- **ページネーション**: 顧客一覧APIでのページング実装
+- **ページネーション**: 法人一覧APIでのページング実装
 - **フィルタリング**: 営業部、ステータス、担当者による絞り込み
 - **レスポンス最適化**: 必要な項目のみを返すフィールド選択機能
 

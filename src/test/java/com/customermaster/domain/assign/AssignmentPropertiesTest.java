@@ -27,7 +27,7 @@ class AssignmentPropertiesTest {
 
     /**
      * プロパティ5: 担当営業者の必須性
-     * 全ての顧客に担当営業者が設定される（要件2.9）
+     * 全ての法人に担当営業者が設定される（要件2.9）
      */
     @Property
     @Label("Feature: customer-master-system, Property 5: 担当営業者の必須性")
@@ -43,7 +43,7 @@ class AssignmentPropertiesTest {
             customerData.creditInfo()
         );
         
-        // Then - 要件2.9: 顧客情報には担当営業者が紐づけられる
+        // Then - 要件2.9: 法人情報には担当営業者が紐づけられる
         assertThat(customer.getAssignedSalesRep()).isNotNull();
         assertThat(customer.getAssignedSalesRep().getSalesRepresentativeId()).isNotNull();
         assertThat(customer.getAssignedSalesRep().getDepartmentId()).isNotNull();
@@ -159,7 +159,7 @@ class AssignmentPropertiesTest {
                 authData.changeRequest()
             ));
         } else if (authData.requesterRole().isSalesRepresentative() && !authData.requesterRole().isDepartmentManager()) {
-            // 営業担当者は自分が担当する顧客のみ申請可能
+            // 営業担当者は自分が担当する法人のみ申請可能
             if (authData.customer().isAssignedTo(authData.requesterId())) {
                 assertThatNoException().isThrownBy(() -> authService.validateAssignmentChangeRequest(
                     authData.requesterId(),
@@ -176,7 +176,7 @@ class AssignmentPropertiesTest {
                     authData.customer(),
                     authData.changeRequest()
                 )).isInstanceOf(IllegalArgumentException.class)
-                  .hasMessageContaining("自分が担当する顧客の担当者変更のみ申請できます");
+                  .hasMessageContaining("自分が担当する法人の担当者変更のみ申請できます");
             }
         }
     }
@@ -497,7 +497,7 @@ class AssignmentPropertiesTest {
         return Arbitraries.of(
             "担当者の退職に伴う変更",
             "営業戦略の見直しによる担当変更",
-            "顧客からの要望による変更",
+            "法人からの要望による変更",
             "業務効率化のための担当変更",
             "専門性を活かした担当変更"
         );

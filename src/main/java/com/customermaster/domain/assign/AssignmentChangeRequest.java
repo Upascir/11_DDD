@@ -10,7 +10,7 @@ import java.util.Objects;
 /**
  * 担当者変更申請
  * 
- * 顧客の担当者変更申請に関する情報を管理する値オブジェクト
+ * 法人の担当者変更申請に関する情報を管理する値オブジェクト
  * 担当者割り当てドメインの中核的な概念
  */
 public class AssignmentChangeRequest extends ValueObject {

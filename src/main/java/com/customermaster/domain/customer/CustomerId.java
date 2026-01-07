@@ -3,9 +3,9 @@ package com.customermaster.domain.customer;
 import com.customermaster.domain.shared.EntityId;
 
 /**
- * 顧客ID
+ * 法人ID
  * 
- * 顧客を一意に識別するための値オブジェクト
+ * 法人を一意に識別するための値オブジェクト
  */
 public class CustomerId extends EntityId {
     

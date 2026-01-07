@@ -21,7 +21,7 @@ public class AssignmentChangeAuthorizationService {
      * @param requesterId 申請者ID
      * @param requesterRole 申請者の役割
      * @param requesterDepartmentId 申請者の営業部ID
-     * @param customer 対象顧客
+     * @param customer 対象法人
      * @param changeRequest 変更申請
      * @throws IllegalArgumentException 権限がない場合
      */
@@ -31,7 +31,7 @@ public class AssignmentChangeAuthorizationService {
                                               AssignmentChangeRequest changeRequest) {
         Objects.requireNonNull(requesterId, "申請者IDは必須です");
         Objects.requireNonNull(requesterRole, "申請者の役割は必須です");
-        Objects.requireNonNull(customer, "対象顧客は必須です");
+        Objects.requireNonNull(customer, "対象法人は必須です");
         Objects.requireNonNull(changeRequest, "変更申請は必須です");
         
         // システム管理者は常に申請可能
@@ -44,23 +44,23 @@ public class AssignmentChangeAuthorizationService {
             throw new IllegalArgumentException("営業担当者または部長のみが担当者変更を申請できます");
         }
         
-        // 要件10.2: 営業担当者は自分が担当する顧客の担当者変更を申請できる
+        // 要件10.2: 営業担当者は自分が担当する法人の担当者変更を申請できる
         if (requesterRole.isSalesRepresentative() && !requesterRole.isDepartmentManager()) {
             if (!customer.isAssignedTo(requesterId)) {
-                throw new IllegalArgumentException("自分が担当する顧客の担当者変更のみ申請できます");
+                throw new IllegalArgumentException("自分が担当する法人の担当者変更のみ申請できます");
             }
         }
         
-        // 部長は同じ営業部の顧客の担当者変更を申請できる
+        // 部長は同じ営業部の法人の担当者変更を申請できる
         if (requesterRole.isDepartmentManager()) {
             if (requesterDepartmentId != null && !customer.belongsToDepartment(requesterDepartmentId)) {
-                throw new IllegalArgumentException("同じ営業部の顧客の担当者変更のみ申請できます");
+                throw new IllegalArgumentException("同じ営業部の法人の担当者変更のみ申請できます");
             }
         }
         
-        // 承認待ち状態の顧客は編集不可（要件3.16）
+        // 承認待ち状態の法人は編集不可（要件3.16）
         if (customer.isPendingApproval()) {
-            throw new IllegalArgumentException("承認待ちの顧客は担当者変更できません");
+            throw new IllegalArgumentException("承認待ちの法人は担当者変更できません");
         }
         
         // 検証成功（例外がスローされなければ成功）
@@ -72,7 +72,7 @@ public class AssignmentChangeAuthorizationService {
      * @param executorId 実行者ID
      * @param executorRole 実行者の役割
      * @param executorDepartmentId 実行者の営業部ID
-     * @param customer 対象顧客
+     * @param customer 対象法人
      * @param changeRequest 変更申請
      * @throws IllegalArgumentException 権限がない場合
      */
@@ -82,7 +82,7 @@ public class AssignmentChangeAuthorizationService {
                                                        AssignmentChangeRequest changeRequest) {
         Objects.requireNonNull(executorId, "実行者IDは必須です");
         Objects.requireNonNull(executorRole, "実行者の役割は必須です");
-        Objects.requireNonNull(customer, "対象顧客は必須です");
+        Objects.requireNonNull(customer, "対象法人は必須です");
         Objects.requireNonNull(changeRequest, "変更申請は必須です");
         
         // 要件10.6: 情報システム部は営業部をまたいだ担当者変更を直接実行できる
@@ -146,19 +146,19 @@ public class AssignmentChangeAuthorizationService {
      * 担当者変更申請が有効かどうかをチェック
      * 
      * @param changeRequest 変更申請
-     * @param customer 対象顧客
+     * @param customer 対象法人
      * @return 有効な場合true
      */
     public boolean isValidAssignmentChangeRequest(AssignmentChangeRequest changeRequest, Customer customer) {
         Objects.requireNonNull(changeRequest, "変更申請は必須です");
-        Objects.requireNonNull(customer, "対象顧客は必須です");
+        Objects.requireNonNull(customer, "対象法人は必須です");
         
         // 現在の担当者が申請時の担当者と一致しているかチェック
         if (!customer.getAssignedSalesRep().equals(changeRequest.getCurrentAssignment())) {
             return false;
         }
         
-        // 顧客が編集可能な状態かチェック
+        // 法人が編集可能な状態かチェック
         if (!customer.isEditable()) {
             return false;
         }

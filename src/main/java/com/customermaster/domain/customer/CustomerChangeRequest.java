@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * 顧客変更申請
+ * 法人変更申請
  * 
- * 顧客情報の変更申請を管理する集約ルート
+ * 法人情報の変更申請を管理する集約ルート
  * 承認ワークフローの中核となるエンティティ
  */
 public class CustomerChangeRequest extends Entity<CustomerChangeRequestId> {
@@ -35,7 +35,7 @@ public class CustomerChangeRequest extends Entity<CustomerChangeRequestId> {
      * コンストラクタ
      * 
      * @param requestId 申請ID
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param originalData 変更前データ
      * @param proposedData 変更後データ
      * @param requesterId 申請者ID
@@ -45,7 +45,7 @@ public class CustomerChangeRequest extends Entity<CustomerChangeRequestId> {
                                 CustomerSnapshot originalData, CustomerSnapshot proposedData,
                                 UserId requesterId, String requestReason) {
         super(requestId);
-        this.customerId = Objects.requireNonNull(customerId, "顧客IDは必須です");
+        this.customerId = Objects.requireNonNull(customerId, "法人IDは必須です");
         this.originalData = Objects.requireNonNull(originalData, "変更前データは必須です");
         this.proposedData = Objects.requireNonNull(proposedData, "変更後データは必須です");
         this.requesterId = Objects.requireNonNull(requesterId, "申請者IDは必須です");
@@ -58,9 +58,9 @@ public class CustomerChangeRequest extends Entity<CustomerChangeRequestId> {
     }
     
     /**
-     * 顧客変更申請を作成
+     * 法人変更申請を作成
      * 
-     * @param customerId 顧客ID
+     * @param customerId 法人ID
      * @param originalData 変更前データ
      * @param proposedData 変更後データ
      * @param requesterId 申請者ID
@@ -208,7 +208,7 @@ public class CustomerChangeRequest extends Entity<CustomerChangeRequestId> {
      */
     private void validateProposedData() {
         if (!originalData.getCustomerId().equals(proposedData.getCustomerId())) {
-            throw new IllegalArgumentException("顧客IDは変更できません");
+            throw new IllegalArgumentException("法人IDは変更できません");
         }
         
         if (originalData.equals(proposedData)) {
