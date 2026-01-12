@@ -121,12 +121,12 @@ public class AssignmentChangeRequest extends Entity&lt;AssignmentChangeRequestId
                                                 LocalDateTime requestedAt,
                                                 AssignmentApprovalStatus status,
                                                 List&lt;AssignmentApproval&gt; approvals) {
-<span class="nc" id="L124">        AssignmentChangeRequest request = new AssignmentChangeRequest(requestId, customerId,</span>
+<span class="fc" id="L124">        AssignmentChangeRequest request = new AssignmentChangeRequest(requestId, customerId,</span>
                                                                     requesterId, currentAssignment, 
                                                                     newAssignment, reason, requestedAt);
-<span class="nc" id="L127">        request.status = status;</span>
-<span class="nc" id="L128">        request.approvals.addAll(approvals);</span>
-<span class="nc" id="L129">        return request;</span>
+<span class="fc" id="L127">        request.status = status;</span>
+<span class="fc" id="L128">        request.approvals.addAll(approvals);</span>
+<span class="fc" id="L129">        return request;</span>
     }
     
     /**
@@ -170,14 +170,14 @@ public class AssignmentChangeRequest extends Entity&lt;AssignmentChangeRequestId
      */
     public void approve(UserId approverId, SalesDepartmentId approverDepartmentId, String comment) {
         // 承認可能な状態かチェック
-<span class="pc bpc" id="L173" title="1 of 2 branches missed.">        if (!status.isPending()) {</span>
-<span class="nc" id="L174">            throw new IllegalStateException(&quot;承認待ち状態でない申請は承認できません&quot;);</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        if (!status.isPending()) {</span>
+<span class="fc" id="L174">            throw new IllegalStateException(&quot;承認待ち状態でない申請は承認できません&quot;);</span>
         }
         
         // 承認期限チェック
-<span class="pc bpc" id="L178" title="1 of 2 branches missed.">        if (isExpired()) {</span>
-<span class="nc" id="L179">            this.status = AssignmentApprovalStatus.EXPIRED;</span>
-<span class="nc" id="L180">            throw new IllegalStateException(&quot;承認期限を過ぎた申請は承認できません&quot;);</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        if (isExpired()) {</span>
+<span class="fc" id="L179">            this.status = AssignmentApprovalStatus.EXPIRED;</span>
+<span class="fc" id="L180">            throw new IllegalStateException(&quot;承認期限を過ぎた申請は承認できません&quot;);</span>
         }
         
         // 承認権限チェック（承認が必要な営業部に所属しているかチェック）
@@ -195,8 +195,8 @@ public class AssignmentChangeRequest extends Entity&lt;AssignmentChangeRequestId
         
         // 既に同じ営業部から承認されていないかチェック
 <span class="fc bfc" id="L197" title="All 2 branches covered.">        for (AssignmentApproval approval : approvals) {</span>
-<span class="pc bpc" id="L198" title="1 of 2 branches missed.">            if (approval.isApprovedByDepartment(approverDepartmentId)) {</span>
-<span class="nc" id="L199">                throw new IllegalStateException(&quot;既に同じ営業部から承認されています&quot;);</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">            if (approval.isApprovedByDepartment(approverDepartmentId)) {</span>
+<span class="fc" id="L199">                throw new IllegalStateException(&quot;既に同じ営業部から承認されています&quot;);</span>
             }
 <span class="fc" id="L201">        }</span>
         
@@ -218,8 +218,8 @@ public class AssignmentChangeRequest extends Entity&lt;AssignmentChangeRequestId
      */
     public void reject(UserId approverId, SalesDepartmentId approverDepartmentId, String reason) {
         // 却下可能な状態かチェック
-<span class="pc bpc" id="L221" title="1 of 2 branches missed.">        if (!status.isPending()) {</span>
-<span class="nc" id="L222">            throw new IllegalStateException(&quot;承認待ち状態でない申請は却下できません&quot;);</span>
+<span class="fc bfc" id="L221" title="All 2 branches covered.">        if (!status.isPending()) {</span>
+<span class="fc" id="L222">            throw new IllegalStateException(&quot;承認待ち状態でない申請は却下できません&quot;);</span>
         }
         
         // 承認権限チェック
@@ -353,7 +353,7 @@ public class AssignmentChangeRequest extends Entity&lt;AssignmentChangeRequestId
      * @return 完全に承認されている場合true
      */
     public boolean isFullyApproved() {
-<span class="nc" id="L356">        return status.isApproved();</span>
+<span class="fc" id="L356">        return status.isApproved();</span>
     }
     
     /**
@@ -362,7 +362,7 @@ public class AssignmentChangeRequest extends Entity&lt;AssignmentChangeRequestId
      * @return 承認待ち状態の場合true
      */
     public boolean isPending() {
-<span class="nc" id="L365">        return status.isPending();</span>
+<span class="fc" id="L365">        return status.isPending();</span>
     }
     
     /**

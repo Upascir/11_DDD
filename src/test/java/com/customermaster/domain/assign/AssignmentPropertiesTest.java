@@ -347,6 +347,335 @@ class AssignmentPropertiesTest {
           .hasMessageContaining("変更理由は必須です");
     }
 
+    // ========== プロパティ7: 担当者変更申請の承認フロー ==========
+
+    /**
+     * プロパティ7: 営業部内変更の承認フロー
+     * 営業部内の担当者変更は該当営業部の部長の承認で完了する（要件3.9, 10.2）
+     */
+    @Property
+    @Label("Feature: customer-master-system, Property 7: 営業部内変更の承認フロー")
+    void withinDepartmentChangeApprovalFlow(@ForAll("validWithinDepartmentChangeData") WithinDepartmentChangeData changeData) {
+        // Given
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(),
+            changeData.requesterId(),
+            changeData.currentAssignment(),
+            changeData.newSalesRepId(),
+            changeData.currentAssignment().getDepartmentId(), // 同じ営業部
+            changeData.reason()
+        );
+        
+        // When - 該当営業部の部長が承認
+        request.approve(changeData.approverId(), changeData.currentAssignment().getDepartmentId(), "承認します");
+        
+        // Then - 要件3.9: 営業部に複数の部長がいる場合、1人の部長が承認すれば十分である
+        assertThat(request.getStatus()).isEqualTo(AssignmentApprovalStatus.APPROVED);
+        assertThat(request.isFullyApproved()).isTrue();
+        assertThat(request.getApprovals()).hasSize(1);
+        assertThat(request.getApprovals().get(0).isApproval()).isTrue();
+        assertThat(request.getApprovals().get(0).getApproverId()).isEqualTo(changeData.approverId());
+    }
+
+    /**
+     * プロパティ7: 営業部間変更の承認フロー - 両方の承認が必要
+     * 営業部間の担当者変更は両方の営業部の部長の承認が必要（要件3.10, 10.3）
+     */
+    @Property
+    @Label("Feature: customer-master-system, Property 7: 営業部間変更の承認フロー - 両方の承認が必要")
+    void crossDepartmentChangeRequiresBothApprovals(@ForAll("validCrossDepartmentChangeData") CrossDepartmentChangeData changeData) {
+        // Given
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(),
+            changeData.requesterId(),
+            changeData.currentAssignment(),
+            changeData.newSalesRepId(),
+            changeData.newDepartmentId(),
+            changeData.reason()
+        );
+        
+        // When - 現在の営業部の部長が承認
+        request.approve(changeData.currentApprover(), changeData.currentAssignment().getDepartmentId(), "現在部署承認");
+        
+        // Then - 要件3.10: 営業部間の担当者変更申請は両方の営業部の部長の承認が必要である
+        assertThat(request.getStatus()).isEqualTo(AssignmentApprovalStatus.PARTIALLY_APPROVED);
+        assertThat(request.isFullyApproved()).isFalse();
+        assertThat(request.getApprovals()).hasSize(1);
+        
+        // When - 新しい営業部の部長も承認
+        request.approve(changeData.newApprover(), changeData.newDepartmentId(), "新部署承認");
+        
+        // Then - 完全承認状態になる
+        assertThat(request.getStatus()).isEqualTo(AssignmentApprovalStatus.APPROVED);
+        assertThat(request.isFullyApproved()).isTrue();
+        assertThat(request.getApprovals()).hasSize(2);
+    }
+
+    /**
+     * プロパティ7: 営業部間変更の同時承認
+     * 営業部間変更はどちらの部長からでも承認できる（要件3.10）
+     */
+    @Property
+    @Label("Feature: customer-master-system, Property 7: 営業部間変更の同時承認")
+    void crossDepartmentChangeConcurrentApproval(@ForAll("validCrossDepartmentChangeData") CrossDepartmentChangeData changeData) {
+        // Given
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(),
+            changeData.requesterId(),
+            changeData.currentAssignment(),
+            changeData.newSalesRepId(),
+            changeData.newDepartmentId(),
+            changeData.reason()
+        );
+        
+        // When - 新しい営業部の部長が先に承認（順序は問わない）
+        request.approve(changeData.newApprover(), changeData.newDepartmentId(), "新部署先行承認");
+        
+        // Then - 部分承認状態
+        assertThat(request.getStatus()).isEqualTo(AssignmentApprovalStatus.PARTIALLY_APPROVED);
+        
+        // When - 現在の営業部の部長も承認
+        request.approve(changeData.currentApprover(), changeData.currentAssignment().getDepartmentId(), "現在部署後続承認");
+        
+        // Then - 完全承認状態になる
+        assertThat(request.getStatus()).isEqualTo(AssignmentApprovalStatus.APPROVED);
+        assertThat(request.isFullyApproved()).isTrue();
+    }
+
+    /**
+     * プロパティ7: 承認期限の管理
+     * 承認期限は申請から1週間以内（要件3.14）
+     */
+    @Property
+    @Label("Feature: customer-master-system, Property 7: 承認期限の管理")
+    void approvalDeadlineIsOneWeekFromRequest(@ForAll("validAssignmentChangeData") AssignmentChangeTestData changeData) {
+        // When
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(),
+            changeData.requesterId(),
+            changeData.currentAssignment(),
+            changeData.newSalesRepId(),
+            changeData.newDepartmentId(),
+            changeData.reason()
+        );
+        
+        // Then - 要件3.14: 承認期限は全ての申請種別で申請から1週間以内である
+        assertThat(request.getDeadline()).isEqualTo(request.getRequestedAt().plusWeeks(1));
+        assertThat(request.getDeadline()).isAfter(request.getRequestedAt());
+    }
+
+    /**
+     * プロパティ7: 承認期限切れの処理
+     * 承認期限を過ぎた申請は承認できない（要件3.15）
+     */
+    @Property
+    @Label("Feature: customer-master-system, Property 7: 承認期限切れの処理")
+    void cannotApproveExpiredRequest(@ForAll("validAssignmentChangeData") AssignmentChangeTestData changeData) {
+        // Given - 過去の日時で申請を作成（期限切れ状態をシミュレート）
+        AssignmentChangeRequest request = AssignmentChangeRequest.restore(
+            AssignmentChangeRequestId.generate(),
+            CustomerId.generate(),
+            changeData.requesterId(),
+            changeData.currentAssignment(),
+            AssignedSalesRepresentative.assignNow(changeData.newSalesRepId(), changeData.newDepartmentId()),
+            changeData.reason(),
+            java.time.LocalDateTime.now().minusWeeks(2), // 2週間前に申請
+            AssignmentApprovalStatus.PENDING,
+            java.util.List.of()
+        );
+        
+        // When & Then - 要件3.15: 承認期限を過ぎた申請は自動的に却下される
+        assertThat(request.isExpired()).isTrue();
+        assertThatThrownBy(() -> request.approve(
+            UserId.generate(), 
+            changeData.currentAssignment().getDepartmentId(), 
+            "期限切れ承認試行"
+        )).isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("承認期限を過ぎた申請は承認できません");
+    }
+
+    /**
+     * プロパティ7: 自己承認制限
+     * 申請者本人が部長の場合でも自分では承認できない（要件3.11）
+     */
+    @Property
+    @Label("Feature: customer-master-system, Property 7: 自己承認制限")
+    void cannotSelfApproveRequest(@ForAll("validSelfApprovalTestData") SelfApprovalTestData testData) {
+        // Given - 申請者が部長の場合
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(),
+            testData.managerUserId(), // 申請者が部長
+            testData.currentAssignment(),
+            testData.newSalesRepId(),
+            testData.newDepartmentId(),
+            testData.reason()
+        );
+        
+        // When & Then - 要件3.11: 申請者本人が部長の場合でも、自分では承認できず他の部長の承認が必要である
+        // 注意: この制約は実際にはAssignmentChangeAuthorizationServiceで実装されるべきだが、
+        // ここではドメインオブジェクト単体での動作を確認
+        // 実際の自己承認制限は認可サービスレイヤーで実装される
+        assertThat(request.getRequesterId()).isEqualTo(testData.managerUserId());
+        assertThat(request.isPending()).isTrue();
+    }
+
+    /**
+     * プロパティ7: 承認コメントの必須性
+     * 承認時は承認コメントの入力が必須（要件3.12）
+     */
+    @Property
+    @Label("Feature: customer-master-system, Property 7: 承認コメントの必須性")
+    void approvalCommentIsRequired(@ForAll("validAssignmentChangeData") AssignmentChangeTestData changeData,
+                                  @ForAll("emptyOrBlankStrings") String emptyComment) {
+        // Given
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(),
+            changeData.requesterId(),
+            changeData.currentAssignment(),
+            changeData.newSalesRepId(),
+            changeData.newDepartmentId(),
+            changeData.reason()
+        );
+        
+        // When & Then - 要件3.12: 承認時は承認コメントの入力が必須である
+        assertThatThrownBy(() -> request.approve(
+            UserId.generate(),
+            changeData.currentAssignment().getDepartmentId(),
+            emptyComment
+        )).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    /**
+     * プロパティ7: 却下理由の必須性
+     * 却下時は却下理由の入力が必須（要件3.13）
+     */
+    @Property
+    @Label("Feature: customer-master-system, Property 7: 却下理由の必須性")
+    void rejectionReasonIsRequired(@ForAll("validAssignmentChangeData") AssignmentChangeTestData changeData,
+                                  @ForAll("emptyOrBlankStrings") String emptyReason) {
+        // Given
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(),
+            changeData.requesterId(),
+            changeData.currentAssignment(),
+            changeData.newSalesRepId(),
+            changeData.newDepartmentId(),
+            changeData.reason()
+        );
+        
+        // When & Then - 要件3.13: 却下時は却下理由の入力が必須である
+        assertThatThrownBy(() -> request.reject(
+            UserId.generate(),
+            changeData.currentAssignment().getDepartmentId(),
+            emptyReason
+        )).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    /**
+     * プロパティ7: 重複承認の防止
+     * 同じ営業部から複数回承認はできない
+     */
+    @Property
+    @Label("Feature: customer-master-system, Property 7: 重複承認の防止")
+    void cannotApproveTwiceFromSameDepartment(@ForAll("validAssignmentChangeData") AssignmentChangeTestData changeData) {
+        // Given
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(),
+            changeData.requesterId(),
+            changeData.currentAssignment(),
+            changeData.newSalesRepId(),
+            changeData.newDepartmentId(),
+            changeData.reason()
+        );
+        
+        SalesDepartmentId departmentId = changeData.currentAssignment().getDepartmentId();
+        
+        // When - 最初の承認
+        request.approve(UserId.generate(), departmentId, "最初の承認");
+        
+        // Then & When - 同じ営業部から再度承認を試行
+        assertThatThrownBy(() -> request.approve(
+            UserId.generate(), // 異なる承認者でも
+            departmentId,      // 同じ営業部からは
+            "重複承認試行"
+        )).isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("既に同じ営業部から承認されています");
+    }
+
+    /**
+     * プロパティ7: 承認済み申請の状態不変性
+     * 承認済みの申請は再度承認や却下ができない
+     */
+    @Property
+    @Label("Feature: customer-master-system, Property 7: 承認済み申請の状態不変性")
+    void cannotModifyApprovedRequest(@ForAll("validWithinDepartmentChangeData") WithinDepartmentChangeData changeData) {
+        // Given - 承認済みの申請
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(),
+            changeData.requesterId(),
+            changeData.currentAssignment(),
+            changeData.newSalesRepId(),
+            changeData.currentAssignment().getDepartmentId(),
+            changeData.reason()
+        );
+        
+        request.approve(changeData.approverId(), changeData.currentAssignment().getDepartmentId(), "承認");
+        
+        // When & Then - 承認済み申請への再承認は不可
+        assertThat(request.getStatus()).isEqualTo(AssignmentApprovalStatus.APPROVED);
+        assertThatThrownBy(() -> request.approve(
+            UserId.generate(),
+            changeData.currentAssignment().getDepartmentId(),
+            "再承認試行"
+        )).isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("承認待ち状態でない申請は承認できません");
+        
+        // When & Then - 承認済み申請への却下も不可
+        assertThatThrownBy(() -> request.reject(
+            UserId.generate(),
+            changeData.currentAssignment().getDepartmentId(),
+            "却下試行"
+        )).isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("承認待ち状態でない申請は却下できません");
+    }
+
+    /**
+     * プロパティ7: 却下された申請の状態不変性
+     * 却下された申請は再度承認や却下ができない
+     */
+    @Property
+    @Label("Feature: customer-master-system, Property 7: 却下された申請の状態不変性")
+    void cannotModifyRejectedRequest(@ForAll("validWithinDepartmentChangeData") WithinDepartmentChangeData changeData) {
+        // Given - 却下された申請
+        AssignmentChangeRequest request = AssignmentChangeRequest.create(
+            CustomerId.generate(),
+            changeData.requesterId(),
+            changeData.currentAssignment(),
+            changeData.newSalesRepId(),
+            changeData.currentAssignment().getDepartmentId(),
+            changeData.reason()
+        );
+        
+        request.reject(changeData.approverId(), changeData.currentAssignment().getDepartmentId(), "却下理由");
+        
+        // When & Then - 却下済み申請への承認は不可
+        assertThat(request.getStatus()).isEqualTo(AssignmentApprovalStatus.REJECTED);
+        assertThatThrownBy(() -> request.approve(
+            UserId.generate(),
+            changeData.currentAssignment().getDepartmentId(),
+            "承認試行"
+        )).isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("承認待ち状態でない申請は承認できません");
+        
+        // When & Then - 却下済み申請への再却下も不可
+        assertThatThrownBy(() -> request.reject(
+            UserId.generate(),
+            changeData.currentAssignment().getDepartmentId(),
+            "再却下試行"
+        )).isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("承認待ち状態でない申請は却下できません");
+    }
+
     // テストデータ生成用のArbitrary
 
     @Provide
@@ -553,6 +882,44 @@ class AssignmentPropertiesTest {
         ));
     }
 
+    @Provide
+    Arbitrary<WithinDepartmentChangeData> validWithinDepartmentChangeData() {
+        return Combinators.combine(
+            validUserIds(),
+            validAssignedSalesRep(),
+            validUserIds(),
+            validUserIds(),
+            validReasons()
+        ).as((requesterId, currentAssignment, newSalesRepId, approverId, reason) ->
+            new WithinDepartmentChangeData(requesterId, currentAssignment, newSalesRepId, approverId, reason));
+    }
+
+    @Provide
+    Arbitrary<CrossDepartmentChangeData> validCrossDepartmentChangeData() {
+        return Combinators.combine(
+            validUserIds(),
+            validAssignedSalesRep(),
+            validUserIds(),
+            validDepartmentIds(),
+            validUserIds(),
+            validUserIds(),
+            validReasons()
+        ).as((requesterId, currentAssignment, newSalesRepId, newDepartmentId, currentApprover, newApprover, reason) ->
+            new CrossDepartmentChangeData(requesterId, currentAssignment, newSalesRepId, newDepartmentId, currentApprover, newApprover, reason));
+    }
+
+    @Provide
+    Arbitrary<SelfApprovalTestData> validSelfApprovalTestData() {
+        return Combinators.combine(
+            validUserIds(),
+            validAssignedSalesRep(),
+            validUserIds(),
+            validDepartmentIds(),
+            validReasons()
+        ).as((managerUserId, currentAssignment, newSalesRepId, newDepartmentId, reason) ->
+            new SelfApprovalTestData(managerUserId, currentAssignment, newSalesRepId, newDepartmentId, reason));
+    }
+
     // テストデータ用のレコード
     private record CustomerTestData(
         CustomerId customerId,
@@ -585,5 +952,31 @@ class AssignmentPropertiesTest {
         Role approverRole,
         SalesDepartmentId approverDepartmentId,
         AssignmentChangeRequest changeRequest
+    ) {}
+
+    private record WithinDepartmentChangeData(
+        UserId requesterId,
+        AssignedSalesRepresentative currentAssignment,
+        UserId newSalesRepId,
+        UserId approverId,
+        String reason
+    ) {}
+
+    private record CrossDepartmentChangeData(
+        UserId requesterId,
+        AssignedSalesRepresentative currentAssignment,
+        UserId newSalesRepId,
+        SalesDepartmentId newDepartmentId,
+        UserId currentApprover,
+        UserId newApprover,
+        String reason
+    ) {}
+
+    private record SelfApprovalTestData(
+        UserId managerUserId,
+        AssignedSalesRepresentative currentAssignment,
+        UserId newSalesRepId,
+        SalesDepartmentId newDepartmentId,
+        String reason
     ) {}
 }

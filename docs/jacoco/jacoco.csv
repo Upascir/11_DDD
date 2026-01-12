@@ -5,13 +5,13 @@ customer-master-system,com.customermaster.domain.user,UserName,0,11,0,0,0,4,0,3,
 customer-master-system,com.customermaster.domain.user,Role,10,66,2,12,2,11,3,12,2,6
 customer-master-system,com.customermaster.domain.user,UserId,0,14,0,0,0,4,0,3,0,3
 customer-master-system,com.customermaster.config,SecurityConfig,83,0,0,0,18,0,12,0,12,0
-customer-master-system,com.customermaster.domain.assign,AssignmentApprovalStatus,38,55,13,3,5,10,12,4,5,3
+customer-master-system,com.customermaster.domain.assign,AssignmentApprovalStatus,30,63,10,6,4,11,9,7,4,4
 customer-master-system,com.customermaster.domain.assign,AssignedSalesRepresentative,57,86,7,7,6,18,9,12,4,10
 customer-master-system,com.customermaster.domain.assign,AssignmentChangeAuthorizationService,11,188,9,35,2,43,8,19,0,5
 customer-master-system,com.customermaster.domain.assign,AssignmentChangeRequestId,13,9,0,0,3,3,2,2,2,2
 customer-master-system,com.customermaster.domain.assign,AssignmentChangeType,3,39,0,4,1,8,1,6,1,4
-customer-master-system,com.customermaster.domain.assign,AssignmentChangeRequest,176,349,21,33,35,83,28,31,13,19
-customer-master-system,com.customermaster.domain.assign,AssignmentApproval,140,77,24,4,19,18,21,9,8,8
+customer-master-system,com.customermaster.domain.assign,AssignmentChangeRequest,124,401,17,37,24,94,21,38,10,22
+customer-master-system,com.customermaster.domain.assign,AssignmentApproval,127,90,21,7,17,20,19,11,8,8
 customer-master-system,com.customermaster.domain.customer,CustomerBasicInfo,93,185,12,28,11,34,19,22,7,14
 customer-master-system,com.customermaster.domain.customer,CreditInfo.CreditRank,6,94,0,0,2,15,2,2,2,2
 customer-master-system,com.customermaster.domain.customer,CustomerChangeRequestId,13,9,0,0,3,3,2,2,2,2

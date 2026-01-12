@@ -96,9 +96,9 @@ public class AssignmentApproval extends ValueObject {
      */
     private void validateBusinessRules() {
         // コメントは空文字列や空白のみは不可
-<span class="pc bpc" id="L99" title="1 of 2 branches missed.">        if (comment.trim().isEmpty()) {</span>
-<span class="nc bnc" id="L100" title="All 2 branches missed.">            String action = isApproval ? &quot;承認&quot; : &quot;却下&quot;;</span>
-<span class="nc" id="L101">            throw new IllegalArgumentException(action + &quot;コメントは必須です&quot;);</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (comment.trim().isEmpty()) {</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">            String action = isApproval ? &quot;承認&quot; : &quot;却下&quot;;</span>
+<span class="fc" id="L101">            throw new IllegalArgumentException(action + &quot;コメントは必須です&quot;);</span>
         }
 <span class="fc" id="L103">    }</span>
     
